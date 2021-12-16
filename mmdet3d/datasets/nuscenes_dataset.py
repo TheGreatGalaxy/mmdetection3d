@@ -314,7 +314,7 @@ class NuScenesDataset(Custom3DDataset):
         print('Start to convert detection format...')
         for sample_id, det in enumerate(mmcv.track_iter_progress(results)):
             annos = []
-            boxes = output_to_nusc_box(det)
+            boxes = self.output_to_nusc_box(det)
             sample_token = self.data_infos[sample_id]['token']
             boxes = lidar_nusc_box_to_global(self.data_infos[sample_id], boxes,
                                              mapped_class_names,
@@ -567,48 +567,57 @@ class NuScenesDataset(Custom3DDataset):
             show_result(points, show_gt_bboxes, show_pred_bboxes, out_dir,
                         file_name, show)
 
+    def output_to_nusc_box(self, detection):
+        """Convert the output to the box class in the nuScenes.
 
-def output_to_nusc_box(detection):
-    """Convert the output to the box class in the nuScenes.
+        Args:
+            detection (dict): Detection results.
 
-    Args:
-        detection (dict): Detection results.
+                - boxes_3d (:obj:`BaseInstance3DBoxes`): Detection bbox.
+                - scores_3d (torch.Tensor): Detection scores.
+                - labels_3d (torch.Tensor): Predicted box labels.
 
-            - boxes_3d (:obj:`BaseInstance3DBoxes`): Detection bbox.
-            - scores_3d (torch.Tensor): Detection scores.
-            - labels_3d (torch.Tensor): Predicted box labels.
+        Returns:
+            list[:obj:`NuScenesBox`]: List of standard NuScenesBoxes.
+        """
+        box3d = detection['boxes_3d']
+        scores = detection['scores_3d'].numpy()
+        labels = detection['labels_3d'].numpy()
 
-    Returns:
-        list[:obj:`NuScenesBox`]: List of standard NuScenesBoxes.
-    """
-    box3d = detection['boxes_3d']
-    scores = detection['scores_3d'].numpy()
-    labels = detection['labels_3d'].numpy()
+        box_gravity_center = box3d.gravity_center.numpy()
+        box_dims = box3d.dims.numpy()
+        box_yaw = box3d.yaw.numpy()
+        # TODO: check whether this is necessary
+        # with dir_offset & dir_limit in the head
+        box_yaw = -box_yaw - np.pi / 2
 
-    box_gravity_center = box3d.gravity_center.numpy()
-    box_dims = box3d.dims.numpy()
-    box_yaw = box3d.yaw.numpy()
-    # TODO: check whether this is necessary
-    # with dir_offset & dir_limit in the head
-    box_yaw = -box_yaw - np.pi / 2
-
-    box_list = []
-    for i in range(len(box3d)):
-        quat = pyquaternion.Quaternion(axis=[0, 0, 1], radians=box_yaw[i])
-        velocity = (*box3d.tensor[i, 7:9], 0.0)
-        # velo_val = np.linalg.norm(box3d[i, 7:9])
-        # velo_ori = box3d[i, 6]
-        # velocity = (
-        # velo_val * np.cos(velo_ori), velo_val * np.sin(velo_ori), 0.0)
-        box = NuScenesBox(
-            box_gravity_center[i],
-            box_dims[i],
-            quat,
-            label=labels[i],
-            score=scores[i],
-            velocity=velocity)
-        box_list.append(box)
-    return box_list
+        box_list = []
+        for i in range(len(box3d)):
+            quat = pyquaternion.Quaternion(axis=[0, 0, 1], radians=box_yaw[i])
+            # print("*box3d.tensor[i].shape: ", *box3d.tensor[i].shape)
+            if self.with_velocity:
+                velocity = (*box3d.tensor[i, 7:9], 0.0)
+                box = NuScenesBox(
+                    box_gravity_center[i],
+                    box_dims[i],
+                    quat,
+                    label=labels[i],
+                    score=scores[i],
+                    velocity=velocity)
+            else:
+                box = NuScenesBox(
+                    box_gravity_center[i],
+                    box_dims[i],
+                    quat,
+                    label=labels[i],
+                    score=scores[i])
+            # velocity = (*box3d.tensor[i, 7:9], 0.0)
+            # velo_val = np.linalg.norm(box3d[i, 7:9])
+            # velo_ori = box3d[i, 6]
+            # velocity = (
+            # velo_val * np.cos(velo_ori), velo_val * np.sin(velo_ori), 0.0)
+            box_list.append(box)
+        return box_list
 
 
 def lidar_nusc_box_to_global(info,

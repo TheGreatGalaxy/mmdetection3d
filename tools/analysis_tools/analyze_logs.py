@@ -4,7 +4,10 @@ import json
 import numpy as np
 import seaborn as sns
 from collections import defaultdict
+import matplotlib
+matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
+
 
 
 def cal_train_time(log_dicts, args):
@@ -174,6 +177,8 @@ def load_json_logs(json_logs):
         with open(json_log, 'r') as log_file:
             for line in log_file:
                 log = json.loads(line.strip())
+                print("type log: \n", type(log))
+                print("log: \n", log)
                 # skip lines without `epoch` field
                 if 'epoch' not in log:
                     continue
@@ -181,7 +186,9 @@ def load_json_logs(json_logs):
                 if epoch not in log_dict:
                     log_dict[epoch] = defaultdict(list)
                 for k, v in log.items():
+                    print("k: ", k, " v: ", v)
                     log_dict[epoch][k].append(v)
+                print("epoch: ", epoch, " log_dict: \n", log_dict[epoch])
     return log_dicts
 
 

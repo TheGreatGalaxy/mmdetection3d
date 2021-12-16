@@ -433,6 +433,7 @@ class HardVFE(nn.Module):
             features_ls.append(points_dist)
 
         # Combine together feature decorations
+        # Cat into (voxel, pt_num, feature).
         voxel_feats = torch.cat(features_ls, dim=-1)
         # The feature decorations were calculated without regard to whether
         # pillar was empty.
@@ -484,3 +485,117 @@ class HardVFE(nn.Module):
         out = torch.max(voxel_canvas, dim=1)[0]
 
         return out
+
+
+class WrapModule(nn.Module):
+    """Wrap the Module to be tested for torch.onnx.export tracking."""
+
+    def __init__(self, wrapped_layers):
+        super(WrapModule, self).__init__()
+        self.wrapped_layers = wrapped_layers
+
+    def forward(self, voxel_feats):
+        for i, layer in enumerate(self.wrapped_layers):
+            voxel_feats = layer(voxel_feats)
+        return voxel_feats
+
+
+class WrapFunction(nn.Module):
+    """Wrap the function to be tested for torch.onnx.export tracking."""
+
+    def __init__(self, wrapped_function):
+        super(WrapFunction, self).__init__()
+        self.wrapped_function = wrapped_function
+
+    def forward(self, *args, **kwargs):
+        return self.wrapped_function(*args, **kwargs)
+
+
+@VOXEL_ENCODERS.register_module()
+class SimpleHardVFE(nn.Module):
+    """Voxel feature encoder used in DV-SECOND.
+
+    It encodes features of voxels and their points. It could also fuse
+    image feature into voxel features in a point-wise manner.
+
+    Args:
+        in_channels (int): Input channels of VFE. Defaults to 4.
+        feat_channels (list(int)): Channels of features in VFE.
+        with_distance (bool): Whether to use the L2 distance of points to the
+            origin point. Default False.
+        with_cluster_center (bool): Whether to use the distance to cluster
+            center of points inside a voxel. Default to False.
+        with_voxel_center (bool): Whether to use the distance to center of
+            voxel for each points inside a voxel. Default to False.
+        voxel_size (tuple[float]): Size of a single voxel. Default to
+            (0.2, 0.2, 4).
+        point_cloud_range (tuple[float]): The range of points or voxels.
+            Default to (0, -40, -3, 70.4, 40, 1).
+        norm_cfg (dict): Config dict of normalization layers.
+        mode (str): The mode when pooling features of points inside a voxel.
+            Available options include 'max' and 'avg'. Default to 'max'.
+        fusion_layer (dict | None): The config dict of fusion layer used in
+            multi-modal detectors. Default to None.
+        return_point_feats (bool): Whether to return the features of each
+            points. Default to False.
+    """
+
+    def __init__(self,
+                 in_channels=10,
+                 feat_channels=[],
+                 norm_cfg=dict(type='BN1d', eps=1e-3, momentum=0.01),
+                 fusion_layer=None,
+                 return_point_feats=False):
+        super(SimpleHardVFE, self).__init__()
+        assert len(feat_channels) > 0
+        self.in_channels = in_channels
+        self.return_point_feats = return_point_feats
+        self.fp16_enabled = False
+        feat_channels = [self.in_channels] + list(feat_channels)
+        vfe_layers = []
+        for i in range(len(feat_channels) - 1):
+            in_filters = feat_channels[i]
+            out_filters = feat_channels[i + 1]
+            if i > 0:
+                in_filters *= 2
+            # TODO: pass norm_cfg to VFE
+            # norm_name, norm_layer = build_norm_layer(norm_cfg, out_filters)
+            if i == (len(feat_channels) - 2):
+                cat_max = False
+                max_out = True
+                if fusion_layer:
+                    max_out = False
+            else:
+                max_out = True
+                cat_max = True
+            vfe_layers.append(
+                VFELayer(
+                    in_filters,
+                    out_filters,
+                    norm_cfg=norm_cfg,
+                    max_out=max_out,
+                    cat_max=cat_max))
+            self.vfe_layers = nn.ModuleList(vfe_layers)
+        self.num_vfe = len(vfe_layers)
+
+    @force_fp32(out_fp16=True)
+    def forward(self, voxel_feats):
+        """Forward functions.
+
+        Args:
+            features (torch.Tensor): Features of voxels, shape is MxNxC.
+            num_points (torch.Tensor): Number of points in each voxel.
+            coors (torch.Tensor): Coordinates of voxels, shape is Mx(1+NDim).
+
+        Returns:
+            tuple: If `return_point_feats` is False, returns voxel features and
+                its coordinates. If `return_point_feats` is True, returns
+                feature of each points inside voxels.
+        """
+        # import pdb
+        # pdb.set_trace()
+        assert(voxel_feats.shape[-1] == self.in_channels)
+        for i, vfe in enumerate(self.vfe_layers):
+            voxel_feats = vfe(voxel_feats)
+
+        return voxel_feats

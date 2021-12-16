@@ -458,6 +458,14 @@ class Anchor3DHead(BaseModule, AnchorTrainMixin):
                 cls_scores, bbox_preds, dir_cls_preds, mlvl_anchors):
             assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
             assert cls_score.size()[-2:] == dir_cls_pred.size()[-2:]
+            # cls_score.size():  torch.Size([140, 468, 468])
+            # bbox_pred:  torch.Size([126, 468, 468])
+            # dir_cls_pred torch.Size([28, 468, 468])
+
+            # print("cls_score.size(): ", cls_score.size())
+            # print("bbox_pred: ", bbox_pred.size())
+            # print("dir_cls_pred", dir_cls_pred.size())
+
             dir_cls_pred = dir_cls_pred.permute(1, 2, 0).reshape(-1, 2)
             dir_cls_score = torch.max(dir_cls_pred, dim=-1)[1]
 

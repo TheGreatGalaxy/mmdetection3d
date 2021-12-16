@@ -1,13 +1,23 @@
 # If point cloud range is changed, the models should also change their point
 # cloud range accordingly
-point_cloud_range = [-50, -50, -5, 50, 50, 3]
+point_cloud_range = [-74.88, -74.88, -2, 74.88, 74.88, 4]
 # For nuScenes we usually do 10-class detection
+# class_names = [
+#     0 'car', 1 'truck', 2 'trailer', 3 'bus', 4 'construction_vehicle', 5 'bicycle',
+#     6 'motorcycle', 7 'pedestrian', 8 'traffic_cone', 9 'barrier'
+# ]
+
+# class_names = [
+#     'car', 'truck', 'trailer', 'bus', 'construction_vehicle', 'bicycle',
+#     'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
+# ]
+
 class_names = [
-    'car', 'truck', 'trailer', 'bus', 'construction_vehicle', 'bicycle',
-    'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
+    'car', 'bicycle', 'pedestrian'
 ]
+
 dataset_type = 'NuScenesDataset'
-data_root = 'data/nuscenes/'
+data_root = 'data/nuscenes/organized/'
 # Input modality for nuScenes dataset, this is consistent with the submission
 # format which requires the information in input_modality.
 input_modality = dict(
@@ -113,6 +123,7 @@ data = dict(
         pipeline=train_pipeline,
         classes=class_names,
         modality=input_modality,
+        with_velocity=False,
         test_mode=False,
         # we use box_type_3d='LiDAR' in kitti and nuscenes dataset
         # and box_type_3d='Depth' in sunrgbd and scannet dataset.
@@ -123,6 +134,7 @@ data = dict(
         ann_file=data_root + 'nuscenes_infos_val.pkl',
         pipeline=test_pipeline,
         classes=class_names,
+        with_velocity=False,
         modality=input_modality,
         test_mode=True,
         box_type_3d='LiDAR'),
@@ -132,6 +144,7 @@ data = dict(
         ann_file=data_root + 'nuscenes_infos_val.pkl',
         pipeline=test_pipeline,
         classes=class_names,
+        with_velocity=False,
         modality=input_modality,
         test_mode=True,
         box_type_3d='LiDAR'))
@@ -139,4 +152,4 @@ data = dict(
 # Since the models are trained by 24 epochs by default, we set evaluation
 # interval to be 24. Please change the interval accordingly if you do not
 # use a default schedule.
-evaluation = dict(interval=24, pipeline=eval_pipeline)
+evaluation = dict(interval=1, pipeline=eval_pipeline)

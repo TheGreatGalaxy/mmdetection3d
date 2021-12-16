@@ -11,6 +11,7 @@ from os import path as osp
 from mmdet3d.core import (Box3DMode, CameraInstance3DBoxes,
                           DepthInstance3DBoxes, LiDARInstance3DBoxes,
                           show_multi_modality_result, show_result,
+                          show_result_with_labels,
                           show_seg_result)
 from mmdet3d.core.bbox import get_box_type
 from mmdet3d.datasets.pipelines import Compose
@@ -28,7 +29,7 @@ def convert_SyncBN(config):
         for item in config:
             if item == 'norm_cfg':
                 config[item]['type'] = config[item]['type']. \
-                                    replace('naiveSyncBN', 'BN')
+                    replace('naiveSyncBN', 'BN')
             else:
                 convert_SyncBN(config[item])
 
@@ -112,6 +113,9 @@ def inference_detector(model, pcd):
         # this is a workaround to avoid the bug of MMDataParallel
         data['img_metas'] = data['img_metas'][0].data
         data['points'] = data['points'][0].data
+        # import pdb
+        # pdb.set_trace()
+        # print("data['points']: \n", data['points'])
     # forward the model
     with torch.no_grad():
         result = model(return_loss=False, rescale=True, **data)
@@ -298,6 +302,11 @@ def show_det_result_meshlab(data,
                             show=False,
                             snapshot=False):
     """Show 3D detection result by meshlab."""
+    # print("data: \n", data)
+    # print("result: \n", result)
+    # import pdb
+    # pdb.set_trace()
+
     points = data['points'][0][0].cpu().numpy()
     pts_filename = data['img_metas'][0][0]['pts_filename']
     file_name = osp.split(pts_filename)[-1].split('.')[0]
@@ -305,14 +314,20 @@ def show_det_result_meshlab(data,
     if 'pts_bbox' in result[0].keys():
         pred_bboxes = result[0]['pts_bbox']['boxes_3d'].tensor.numpy()
         pred_scores = result[0]['pts_bbox']['scores_3d'].numpy()
+        pred_labels = result[0]['pts_bbox']['labels_3d'].numpy()
+
     else:
         pred_bboxes = result[0]['boxes_3d'].tensor.numpy()
         pred_scores = result[0]['scores_3d'].numpy()
+        pred_labels = result[0]['labels_3d'].numpy()
 
+    assert(pred_labels.shape[0] == pred_scores.shape[0])
     # filter out low score bboxes for visualization
     if score_thr > 0:
         inds = pred_scores > score_thr
         pred_bboxes = pred_bboxes[inds]
+        pred_scores = pred_scores[inds]
+        pred_labels = pred_labels[inds]
 
     # for now we convert points into depth mode
     box_mode = data['img_metas'][0][0]['box_mode_3d']
@@ -323,14 +338,17 @@ def show_det_result_meshlab(data,
     else:
         show_bboxes = deepcopy(pred_bboxes)
 
-    show_result(
+    # show_result(
+    show_result_with_labels(
         points,
         None,
         show_bboxes,
         out_dir,
         file_name,
         show=show,
-        snapshot=snapshot)
+        snapshot=snapshot,
+        pred_labels=pred_labels,
+        pred_scores=pred_scores)
 
     return file_name
 
