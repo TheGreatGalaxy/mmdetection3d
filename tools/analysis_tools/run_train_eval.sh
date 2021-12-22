@@ -1,4 +1,4 @@
-python tools/analysis_tools/analyze_logs_train_eval.py plot_curve checkpoints/train_hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class_1/20211221_115845.log.json \
+python tools/analysis_tools/analyze_logs_train_eval.py plot_curve checkpoints/train_1_hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class/20211221_115845.log.json \
 --mode eval \
 --keys KITTI/Pedestrian_3D_easy_strict KITTI/Cyclist_3D_easy_strict KITTI/Car_3D_easy_strict \
 KITTI/Pedestrian_3D_moderate_strict KITTI/Cyclist_3D_moderate_strict KITTI/Car_3D_moderate_strict \
