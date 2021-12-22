@@ -124,11 +124,12 @@ mmdet3d/.mim
 *.jpg
 *.png
 data/
-data/s3dis/Stanford3dDataset_v1.2_Aligned_Version/
-data/scannet/
-data/sunrgbd/
 *.obj
 *.ply
 
 # Waymo evaluation
 mmdet3d/core/evaluation/waymo_utils/compute_detection_metrics_main
+
+
+# models
+checkpoints/

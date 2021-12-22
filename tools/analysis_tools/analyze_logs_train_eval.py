@@ -1,9 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import json
+from tkinter.constants import PROJECTING
 import numpy as np
 import seaborn as sns
 from collections import defaultdict
+import tkinter
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
@@ -51,10 +53,16 @@ def plot_curve(log_dicts, args):
     for i, log_dict in enumerate(log_dicts):
         epochs = list(log_dict.keys())
         for j, metric in enumerate(metrics):
-            print(f'plot curve of {args.json_logs[i]}, metric is {metric}')
-            if metric not in log_dict[epochs[args.interval - 1]]:
-                raise KeyError(
-                    f'{args.json_logs[i]} does not contain metric {metric}')
+            if args.mode == "train":
+                if metric not in log_dict[epochs[args.interval - 1]]["train"]:
+                    raise KeyError(
+                        f'{args.json_logs[i]} does not contain metric {metric}')
+            # elif args.mode == "eval":
+            #     print("test: \n", log_dict[epochs[args.interval -1]])
+            #     if metric not in log_dict[epochs[args.interval -1]]["val"]:
+            #         continue
+            #         raise KeyError(
+            #             f'{args.json_logs[i]} does not contain metric {metric}')
 
             if args.mode == 'eval':
                 if min(epochs) == args.interval:
@@ -69,15 +77,18 @@ def plot_curve(log_dicts, args):
                         # find the first epoch that do eval
                         x0 = min(epochs) + args.interval - \
                             min(epochs) % args.interval
-                xs = np.arange(x0, max(epochs) + 1, args.interval)
+                # xs = np.arange(x0, max(epochs) + 1, args.interval)
+                xs = []
                 ys = []
                 for epoch in epochs[args.interval - 1::args.interval]:
-                    ys += log_dict[epoch][metric]
-
+                    if metric not in log_dict[epoch]["val"]:
+                        continue
+                    xs.append(epoch)
+                    ys += log_dict[epoch]["val"][metric]
                 # if training is aborted before eval of the last epoch
                 # `xs` and `ys` will have different length and cause an error
                 # check if `ys[-1]` is empty here
-                if not log_dict[epoch][metric]:
+                if not log_dict[epoch]["val"][metric]:
                     xs = xs[:-1]
 
                 ax = plt.gca()
@@ -85,17 +96,16 @@ def plot_curve(log_dicts, args):
                 plt.xlabel('epoch')
                 plt.plot(xs, ys, label=legend[i * num_metrics + j], marker='o')
             else:
+                '''trainning'''
                 xs = []
                 ys = []
                 num_iters_per_epoch = \
-                    log_dict[epochs[args.interval-1]]['iter'][-1]
+                    log_dict[epochs[args.interval-1]]["train"]['iter'][-1]
                 for epoch in epochs[args.interval - 1::args.interval]:
-                    iters = log_dict[epoch]['iter']
-                    if log_dict[epoch]['mode'][-1] == 'val':
-                        iters = iters[:-1]
+                    iters = log_dict[epoch]["train"]['iter']
                     xs.append(
                         np.array(iters) + (epoch - 1) * num_iters_per_epoch)
-                    ys.append(np.array(log_dict[epoch][metric][:len(iters)]))
+                    ys.append(np.array(log_dict[epoch]["train"][metric][:len(iters)]))
                 xs = np.concatenate(xs)
                 ys = np.concatenate(ys)
                 plt.xlabel('iter')
@@ -175,20 +185,33 @@ def load_json_logs(json_logs):
     log_dicts = [dict() for _ in json_logs]
     for json_log, log_dict in zip(json_logs, log_dicts):
         with open(json_log, 'r') as log_file:
+            i = 0
             for line in log_file:
                 log = json.loads(line.strip())
-                print("type log: \n", type(log))
-                print("log: \n", log)
                 # skip lines without `epoch` field
                 if 'epoch' not in log:
                     continue
                 epoch = log.pop('epoch')
                 if epoch not in log_dict:
-                    log_dict[epoch] = defaultdict(list)
-                for k, v in log.items():
-                    print("k: ", k, " v: ", v)
-                    log_dict[epoch][k].append(v)
-                print("epoch: ", epoch, " log_dict: \n", log_dict[epoch])
+                    log_dict[epoch] = defaultdict(defaultdict)
+                    log_dict[epoch]["train"] = defaultdict(list)
+                    log_dict[epoch]["val"] = defaultdict(list)
+                if "mode" not in log:
+                    continue
+                mode = log.pop("mode")
+                if mode == "train":
+                    for k, v in log.items():
+                        log_dict[epoch]["train"][k].append(v)
+                elif mode == "val":
+                    for k, v in log.items():
+                        log_dict[epoch]["val"][k].append(v)
+                else:
+                    pass
+                i += 1
+            #     if i > 300:
+            #         break
+            # for k, v in log_dict.items():
+            #     print("\nk: ", k, " v: ", v)
     return log_dicts
 
 
@@ -200,7 +223,6 @@ def main():
         assert json_log.endswith('.json')
 
     log_dicts = load_json_logs(json_logs)
-
     eval(args.task)(log_dicts, args)
 
 
