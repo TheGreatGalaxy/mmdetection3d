@@ -9,7 +9,7 @@ model = dict(
     pts_neck=dict(
         _delete_=True,
         type='SECONDFPN',
-        norm_cfg=dict(type='naiveSyncBN2d', eps=1e-3, momentum=0.01),
+        norm_cfg=dict(type='BN2d', eps=1e-3, momentum=0.01),
         in_channels=[64, 128, 256],
         upsample_strides=[1, 2, 4],
         out_channels=[128, 128, 128]),
