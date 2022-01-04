@@ -18,7 +18,7 @@ def main():
     parser.add_argument(
         '--score-thr', type=float, default=0.0, help='bbox score threshold')
     parser.add_argument(
-        '--out-dir', type=str, default='demo', help='dir to save results')
+        '--out-dir', type=str, default='demo/temp', help='dir to save results')
     parser.add_argument(
         '--show',
         action='store_true',

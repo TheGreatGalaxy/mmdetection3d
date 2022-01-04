@@ -225,6 +225,7 @@ class LoadPointsFromMultiSweeps(object):
                 sweep_points_list.append(points_sweep)
 
         points = points.cat(sweep_points_list)
+        # nuScenes is using use_dim=[0, 1, 2, 4], the intensity is set to zero.
         points = points[:, self.use_dim]
         results['points'] = points
         return results
