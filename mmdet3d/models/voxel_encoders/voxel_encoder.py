@@ -433,6 +433,7 @@ class HardVFE(nn.Module):
             features_ls.append(points_dist)
 
         # Combine together feature decorations
+        # Cat into (voxel, pt_num, feature).
         voxel_feats = torch.cat(features_ls, dim=-1)
         # The feature decorations were calculated without regard to whether
         # pillar was empty.
