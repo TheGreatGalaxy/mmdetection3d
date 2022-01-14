@@ -377,7 +377,6 @@ class HardVFE(nn.Module):
             self.vfe_layers = nn.ModuleList(vfe_layers)
         self.num_vfe = len(vfe_layers)
 
-
     @force_fp32(out_fp16=True)
     def forward(self,
                 features,
@@ -425,7 +424,7 @@ class HardVFE(nn.Module):
             features_ls.append(points_dist)
 
         # Combine together feature decorations
-        # Cat into (voxel, pt_num, feature).
+        # Cat into (voxel, pt_num, feature). Size is (P, N, D).
         voxel_feats = torch.cat(features_ls, dim=-1)
         # The feature decorations were calculated without regard to whether
         # pillar was empty.

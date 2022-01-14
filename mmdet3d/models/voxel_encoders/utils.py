@@ -84,6 +84,7 @@ class VFELayer(nn.Module):
         voxel_count = inputs.shape[1]
 
         x = self.linear(inputs)
+        # Norm should input (N, C) or (N, C, L). Output is same size as input. N is batch size. C is channel.
         x = self.norm(x.permute(0, 2, 1).contiguous()).permute(0, 2,
                                                                1).contiguous()
         pointwise = F.relu(x)
