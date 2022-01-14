@@ -28,7 +28,7 @@ def convert_SyncBN(config):
         for item in config:
             if item == 'norm_cfg':
                 config[item]['type'] = config[item]['type']. \
-                                    replace('naiveSyncBN', 'BN')
+                    replace('naiveSyncBN', 'BN')
             else:
                 convert_SyncBN(config[item])
 
@@ -112,6 +112,9 @@ def inference_detector(model, pcd):
         # this is a workaround to avoid the bug of MMDataParallel
         data['img_metas'] = data['img_metas'][0].data
         data['points'] = data['points'][0].data
+        import pdb
+        pdb.set_trace()
+        print("data['points']: \n", data['points'])
     # forward the model
     with torch.no_grad():
         result = model(return_loss=False, rescale=True, **data)

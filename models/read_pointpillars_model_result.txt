@@ -1,0 +1,157 @@
+==========  LoadVoxelEncoder  ==========
+model:  RecursiveScriptModule(
+  original_name=HardVFE
+  (scatter): RecursiveScriptModule(original_name=DynamicScatter)
+  (vfe_layers): RecursiveScriptModule(
+    original_name=ModuleList
+    (0): RecursiveScriptModule(
+      original_name=VFELayer
+      (norm): RecursiveScriptModule(original_name=NaiveSyncBatchNorm1d)
+      (linear): RecursiveScriptModule(original_name=Linear)
+    )
+  )
+)
+model.code:  def forward(self,
+    features: Tensor,
+    num_points: Tensor,
+    coors: Tensor) -> Tensor:
+  vfe_layers = self.vfe_layers
+  _0 = getattr(vfe_layers, "0")
+  _1 = torch.slice(features, 0, 0, 9223372036854775807)
+  _2 = torch.slice(_1, 1, 0, 9223372036854775807)
+  _3 = torch.sum(torch.slice(_2, 2, 0, 3), [1], True)
+  num_points0 = torch.type_as(num_points, features)
+  _4 = torch.view(num_points0, [-1, 1, 1])
+  if torch.is_floating_point(_3):
+    _5 = True
+  else:
+    _5 = torch.is_floating_point(_4)
+  if _5:
+    points_mean = torch.div(_3, _4)
+  else:
+    _6 = torch.div(_3, _4, rounding_mode="trunc")
+    points_mean = _6
+  _7 = torch.slice(features, 0, 0, 9223372036854775807)
+  _8 = torch.slice(_7, 1, 0, 9223372036854775807)
+  f_cluster = torch.sub(torch.slice(_8, 2, 0, 3), points_mean)
+  _9 = ops.prim.NumToTensor(torch.size(features, 0))
+  _10 = ops.prim.NumToTensor(torch.size(features, 1))
+  f_center = torch.new_zeros(features, [int(_9), int(_10), 3], dtype=6, layout=0, device=torch.device("cuda:0"), pin_memory=False)
+  _11 = torch.slice(features, 0, 0, 9223372036854775807)
+  _12 = torch.slice(_11, 1, 0, 9223372036854775807)
+  _13 = torch.slice(coors, 0, 0, 9223372036854775807)
+  _14 = torch.type_as(torch.select(_13, 1, 3), features)
+  _15 = torch.mul(torch.unsqueeze(_14, 1), CONSTANTS.c0)
+  _16 = torch.sub(torch.select(_12, 2, 0), torch.add(_15, CONSTANTS.c1))
+  _17 = torch.slice(f_center, 0, 0, 9223372036854775807)
+  _18 = torch.slice(_17, 1, 0, 9223372036854775807)
+  _19 = torch.copy_(torch.select(_18, 2, 0), torch.view(_16, [32000, 20]))
+  _20 = torch.slice(features, 0, 0, 9223372036854775807)
+  _21 = torch.slice(_20, 1, 0, 9223372036854775807)
+  _22 = torch.slice(coors, 0, 0, 9223372036854775807)
+  _23 = torch.type_as(torch.select(_22, 1, 2), features)
+  _24 = torch.mul(torch.unsqueeze(_23, 1), CONSTANTS.c0)
+  _25 = torch.sub(torch.select(_21, 2, 1), torch.add(_24, CONSTANTS.c1))
+  _26 = torch.slice(f_center, 0, 0, 9223372036854775807)
+  _27 = torch.slice(_26, 1, 0, 9223372036854775807)
+  _28 = torch.copy_(torch.select(_27, 2, 1), torch.view(_25, [32000, 20]))
+  _29 = torch.slice(features, 0, 0, 9223372036854775807)
+  _30 = torch.slice(_29, 1, 0, 9223372036854775807)
+  _31 = torch.slice(coors, 0, 0, 9223372036854775807)
+  _32 = torch.type_as(torch.select(_31, 1, 1), features)
+  _33 = torch.mul(torch.unsqueeze(_32, 1), CONSTANTS.c2)
+  _34 = torch.sub(torch.select(_30, 2, 2), torch.add(_33, CONSTANTS.c3))
+  _35 = torch.slice(f_center, 0, 0, 9223372036854775807)
+  _36 = torch.slice(_35, 1, 0, 9223372036854775807)
+  _37 = torch.copy_(torch.select(_36, 2, 2), torch.view(_34, [32000, 20]))
+  voxel_feats = torch.cat([features, f_cluster, f_center], -1)
+  max_num = ops.prim.NumToTensor(torch.size(voxel_feats, 1))
+  _38 = annotate(number, max_num)
+  actual_num = torch.unsqueeze(num_points0, 1)
+  _39 = torch.arange(_38, dtype=3, layout=0, device=torch.device("cuda:0"), pin_memory=False)
+  _40 = torch.view(_39, [1, -1])
+  mask = torch.gt(torch.to(actual_num, 3), _40)
+  _41 = torch.type_as(torch.unsqueeze(mask, -1), voxel_feats)
+  inputs = torch.mul_(voxel_feats, _41)
+  return (_0).forward(inputs, )
+
+==========  LoadVoxelEncoder  ==========
+model:  RecursiveScriptModule(
+  original_name=HardVFE
+  (scatter): RecursiveScriptModule(original_name=DynamicScatter)
+  (vfe_layers): RecursiveScriptModule(
+    original_name=ModuleList
+    (0): RecursiveScriptModule(
+      original_name=VFELayer
+      (norm): RecursiveScriptModule(original_name=BatchNorm1d)
+      (linear): RecursiveScriptModule(original_name=Linear)
+    )
+    (1): RecursiveScriptModule(
+      original_name=VFELayer
+      (norm): RecursiveScriptModule(original_name=BatchNorm1d)
+      (linear): RecursiveScriptModule(original_name=Linear)
+    )
+  )
+)
+model.code:  def forward(self,
+    features: Tensor,
+    num_points: Tensor,
+    coors: Tensor) -> Tensor:
+  vfe_layers = self.vfe_layers
+  _1 = getattr(vfe_layers, "1")
+  vfe_layers0 = self.vfe_layers
+  _0 = getattr(vfe_layers0, "0")
+  _2 = torch.slice(features, 0, 0, 9223372036854775807)
+  _3 = torch.slice(_2, 1, 0, 9223372036854775807)
+  _4 = torch.sum(torch.slice(_3, 2, 0, 3), [1], True)
+  _5 = torch.view(torch.type_as(num_points, features), [-1, 1, 1])
+  points_mean = torch.div(_4, _5)
+  _6 = torch.slice(features, 0, 0, 9223372036854775807)
+  _7 = torch.slice(_6, 1, 0, 9223372036854775807)
+  f_cluster = torch.sub(torch.slice(_7, 2, 0, 3), points_mean)
+  _8 = ops.prim.NumToTensor(torch.size(features, 0))
+  _9 = int(_8)
+  _10 = ops.prim.NumToTensor(torch.size(features, 1))
+  f_center = torch.new_zeros(features, [_9, int(_10), 3], dtype=6, layout=0, device=torch.device("cuda:0"), pin_memory=False)
+  _11 = torch.slice(features, 0, 0, 9223372036854775807)
+  _12 = torch.slice(_11, 1, 0, 9223372036854775807)
+  _13 = torch.select(_12, 2, 0)
+  _14 = torch.slice(coors, 0, 0, 9223372036854775807)
+  _15 = torch.type_as(torch.select(_14, 1, 3), features)
+  _16 = torch.mul(torch.unsqueeze(_15, 1), CONSTANTS.c0)
+  _17 = torch.sub(_13, torch.add(_16, CONSTANTS.c1))
+  _18 = torch.slice(f_center, 0, 0, 9223372036854775807)
+  _19 = torch.slice(_18, 1, 0, 9223372036854775807)
+  _20 = torch.copy_(torch.select(_19, 2, 0), _17)
+  _21 = torch.slice(features, 0, 0, 9223372036854775807)
+  _22 = torch.slice(_21, 1, 0, 9223372036854775807)
+  _23 = torch.select(_22, 2, 1)
+  _24 = torch.slice(coors, 0, 0, 9223372036854775807)
+  _25 = torch.type_as(torch.select(_24, 1, 2), features)
+  _26 = torch.mul(torch.unsqueeze(_25, 1), CONSTANTS.c0)
+  _27 = torch.sub(_23, torch.add(_26, CONSTANTS.c1))
+  _28 = torch.slice(f_center, 0, 0, 9223372036854775807)
+  _29 = torch.slice(_28, 1, 0, 9223372036854775807)
+  _30 = torch.copy_(torch.select(_29, 2, 1), _27)
+  _31 = torch.slice(features, 0, 0, 9223372036854775807)
+  _32 = torch.slice(_31, 1, 0, 9223372036854775807)
+  _33 = torch.select(_32, 2, 2)
+  _34 = torch.slice(coors, 0, 0, 9223372036854775807)
+  _35 = torch.type_as(torch.select(_34, 1, 1), features)
+  _36 = torch.mul(torch.unsqueeze(_35, 1), CONSTANTS.c2)
+  _37 = torch.sub(_33, torch.add(_36, CONSTANTS.c3))
+  _38 = torch.slice(f_center, 0, 0, 9223372036854775807)
+  _39 = torch.slice(_38, 1, 0, 9223372036854775807)
+  _40 = torch.copy_(torch.select(_39, 2, 2), _37)
+  voxel_feats = torch.cat([features, f_cluster, f_center], -1)
+  max_num = ops.prim.NumToTensor(torch.size(voxel_feats, 1))
+  _41 = annotate(number, max_num)
+  actual_num = torch.unsqueeze(num_points, 1)
+  _42 = torch.arange(_41, dtype=3, layout=0, device=torch.device("cuda:0"), pin_memory=False)
+  max_num0 = torch.view(_42, [1, -1])
+  actual_num0 = torch.to(actual_num, 3)
+  mask = torch.gt(actual_num0, max_num0)
+  _43 = torch.type_as(torch.unsqueeze(mask, -1), voxel_feats)
+  inputs = torch.mul_(voxel_feats, _43)
+  _44 = (_1).forward((_0).forward(inputs, ), )
+  return _44

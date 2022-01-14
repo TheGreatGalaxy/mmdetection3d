@@ -41,7 +41,11 @@ def main():
     elif os.path.isfile(args.pcd):
         pcd_lists.append(args.pcd)
 
+    # count = 0
     for idx, pcd in enumerate(pcd_lists):
+        # count += 1
+        # if count > 5:
+        #     exit()
         # test a single image
         print("====== now is processing frame {}, pcd file: {}. ======".format(idx, pcd))
         start  = time.time()

@@ -1,5 +1,17 @@
+# Build docker
+> docker build -f docker/Dockerfile -t mmdetection_v2 .
 
-# Run docker
+Install python dependencies:
+> pip install -r requirements.txt
+
+Install mmdetection3d:
+> pip install -v -e .
+
+If appears errors about libgl when using open3d, maybe you should install libnvidia_gl lib, run the command in docker terminal:
+> apt install libnvidia-gl-xxx
+'xxx' is the version of cuda driver.
+
+# Run in docker
 ## Display issues
 If report issues of matplotlib. Can try this command after installing moudles with GUI, "TKagg" .e.c.
 ```shell
@@ -8,7 +20,7 @@ xhost +
 
 ## Create a new container with image mmdetection3d.
 ```shell
-docker run --gpus all -it -v /Dataset/:/mmdetection3d/data -v /tmp/.X11:/tmp/.X11 -e DISPLAY=$DISPLAY --name ${container_name} mmdetection3d
+docker run --gpus all -it -v ${dataset_path}:/mmdetection3d/data  -v ${mmdetection3d_code_path}:/mmdetection3d -v /tmp/.X11:/tmp/.X11 -e DISPLAY=$DISPLAY --name ${container_name} mmdetection3d
 ```
 
 # Run models

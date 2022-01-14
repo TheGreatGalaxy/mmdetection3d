@@ -24,19 +24,23 @@ class MVXTwoStageDetector(Base3DDetector):
                  pts_voxel_layer=None,
                  pts_voxel_encoder=None,
                  pts_middle_encoder=None,
-                 pts_fusion_layer=None,
+                 #  pts_fusion_layer=None,
                  img_backbone=None,
                  pts_backbone=None,
                  img_neck=None,
                  pts_neck=None,
                  pts_bbox_head=None,
-                 img_roi_head=None,
-                 img_rpn_head=None,
+                 #  img_roi_head=None,
+                 #  img_rpn_head=None,
                  train_cfg=None,
                  test_cfg=None,
                  pretrained=None,
                  init_cfg=None):
         super(MVXTwoStageDetector, self).__init__(init_cfg=init_cfg)
+
+        # Save model for pointpillars.
+        self.save_model = False
+        self.save_model_base_path = "models/train_6_apollo/mm_"
 
         if pts_voxel_layer:
             self.pts_voxel_layer = Voxelization(**pts_voxel_layer)
@@ -48,9 +52,9 @@ class MVXTwoStageDetector(Base3DDetector):
                 pts_middle_encoder)
         if pts_backbone:
             self.pts_backbone = builder.build_backbone(pts_backbone)
-        if pts_fusion_layer:
-            self.pts_fusion_layer = builder.build_fusion_layer(
-                pts_fusion_layer)
+        # if pts_fusion_layer:
+        #     self.pts_fusion_layer = builder.build_fusion_layer(
+        #         pts_fusion_layer)
         if pts_neck is not None:
             self.pts_neck = builder.build_neck(pts_neck)
         if pts_bbox_head:
@@ -64,10 +68,10 @@ class MVXTwoStageDetector(Base3DDetector):
             self.img_backbone = builder.build_backbone(img_backbone)
         if img_neck is not None:
             self.img_neck = builder.build_neck(img_neck)
-        if img_rpn_head is not None:
-            self.img_rpn_head = builder.build_head(img_rpn_head)
-        if img_roi_head is not None:
-            self.img_roi_head = builder.build_head(img_roi_head)
+        # if img_rpn_head is not None:
+        #     self.img_rpn_head = builder.build_head(img_rpn_head)
+        # if img_roi_head is not None:
+        #     self.img_roi_head = builder.build_head(img_roi_head)
 
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
@@ -82,18 +86,18 @@ class MVXTwoStageDetector(Base3DDetector):
             raise ValueError(
                 f'pretrained should be a dict, got {type(pretrained)}')
 
-        if self.with_img_backbone:
-            if img_pretrained is not None:
-                warnings.warn('DeprecationWarning: pretrained is a deprecated \
-                    key, please consider using init_cfg')
-                self.img_backbone.init_cfg = dict(
-                    type='Pretrained', checkpoint=img_pretrained)
-        if self.with_img_roi_head:
-            if img_pretrained is not None:
-                warnings.warn('DeprecationWarning: pretrained is a deprecated \
-                    key, please consider using init_cfg')
-                self.img_roi_head.init_cfg = dict(
-                    type='Pretrained', checkpoint=img_pretrained)
+        # if self.with_img_backbone:
+        #     if img_pretrained is not None:
+        #         warnings.warn('DeprecationWarning: pretrained is a deprecated \
+        #             key, please consider using init_cfg')
+        #         self.img_backbone.init_cfg = dict(
+        #             type='Pretrained', checkpoint=img_pretrained)
+        # if self.with_img_roi_head:
+        #     if img_pretrained is not None:
+        #         warnings.warn('DeprecationWarning: pretrained is a deprecated \
+        #             key, please consider using init_cfg')
+        #         self.img_roi_head.init_cfg = dict(
+        #             type='Pretrained', checkpoint=img_pretrained)
 
         if self.with_pts_backbone:
             if pts_pretrained is not None:
@@ -188,24 +192,74 @@ class MVXTwoStageDetector(Base3DDetector):
             img_feats = self.img_neck(img_feats)
         return img_feats
 
-    def extract_pts_feat(self, pts, img_feats, img_metas):
+    def extract_pts_feat(self, pts):
         """Extract features of points."""
         if not self.with_pts_bbox:
             return None
+
+        print("before voxelize pts shape: \n", pts[0].shape)
+        # before voxelize pts shape:  torch.Size([58103, 4])
+
         voxels, num_points, coors = self.voxelize(pts)
-        voxel_features = self.pts_voxel_encoder(voxels, num_points, coors,
-                                                img_feats, img_metas)
+        print("after voxelize voxels:", voxels.shape)
+        # after voxelize voxels: torch.Size([3151, 20, 4])
+        print("after voxelize num_points: ", num_points.shape)
+        # after voxelize num_points:  torch.Size([3151])
+        print("after voxelize coors: ", coors.shape)
+        # after voxelize coors:  torch.Size([3151, 4])
+
+        voxel_features = self.pts_voxel_encoder(voxels, num_points, coors)
+
+        print("after HardVFE voxel_feature: \n", voxel_features.shape)
+        # after HardVFE voxel_feature:  torch.Size([3151, 64])
+
+        import pdb
+        pdb.set_trace()
+
+        if self.save_model:
+            # Save voxel encoder.
+            print("==== ready to save voxel encoder ====")
+            voxel_encoder_saver = torch.jit.trace(
+                self.pts_voxel_encoder, (voxels, num_points, coors))
+            voxel_encoder_saver.save(
+                self.save_model_base_path + "voxel_encoder.zip")
+            print("==== save voxel encoder done ====")
+
         batch_size = coors[-1, 0] + 1
         x = self.pts_middle_encoder(voxel_features, coors, batch_size)
-        x = self.pts_backbone(x)
+        if self.save_model:
+            # Save middle encoder.
+            print("\n==== ready to save middle encoder ====")
+            middle_encoder_saver = torch.jit.trace(
+                self.pts_middle_encoder, (voxel_features, coors, batch_size))
+            middle_encoder_saver.save(
+                self.save_model_base_path + "middle_encoder.zip")
+            print("==== save middle encoder done ====")
+
+        temp_x = self.pts_backbone(x)
+        if self.save_model:
+            # Save backbone.
+            print("\n==== ready to save backbone ====")
+            backbone_saver = torch.jit.trace(self.pts_backbone, (x))
+            backbone_saver.save(self.save_model_base_path + "backbone.zip")
+            print("==== save backbone done ====")
+        x = temp_x
+
         if self.with_pts_neck:
-            x = self.pts_neck(x)
+            temp_x = self.pts_neck(x)
+            if self.save_model:
+                # Save neck.
+                print("\n==== ready to save neck ====")
+                neck_saver = torch.jit.trace(self.pts_neck, (x, ))
+                neck_saver.save(self.save_model_base_path + "neck.zip")
+                print("==== save neck done ====")
+            x = temp_x
         return x
 
     def extract_feat(self, points, img, img_metas):
         """Extract features from images and points."""
         img_feats = self.extract_img_feat(img, img_metas)
-        pts_feats = self.extract_pts_feat(points, img_feats, img_metas)
+        pts_feats = self.extract_pts_feat(points)
         return (img_feats, pts_feats)
 
     @torch.no_grad()
@@ -316,81 +370,17 @@ class MVXTwoStageDetector(Base3DDetector):
             *loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)
         return losses
 
-    def forward_img_train(self,
-                          x,
-                          img_metas,
-                          gt_bboxes,
-                          gt_labels,
-                          gt_bboxes_ignore=None,
-                          proposals=None,
-                          **kwargs):
-        """Forward function for image branch.
-
-        This function works similar to the forward function of Faster R-CNN.
-
-        Args:
-            x (list[torch.Tensor]): Image features of shape (B, C, H, W)
-                of multiple levels.
-            img_metas (list[dict]): Meta information of images.
-            gt_bboxes (list[torch.Tensor]): Ground truth boxes of each image
-                sample.
-            gt_labels (list[torch.Tensor]): Ground truth labels of boxes.
-            gt_bboxes_ignore (list[torch.Tensor], optional): Ground truth
-                boxes to be ignored. Defaults to None.
-            proposals (list[torch.Tensor], optional): Proposals of each sample.
-                Defaults to None.
-
-        Returns:
-            dict: Losses of each branch.
-        """
-        losses = dict()
-        # RPN forward and loss
-        if self.with_img_rpn:
-            rpn_outs = self.img_rpn_head(x)
-            rpn_loss_inputs = rpn_outs + (gt_bboxes, img_metas,
-                                          self.train_cfg.img_rpn)
-            rpn_losses = self.img_rpn_head.loss(
-                *rpn_loss_inputs, gt_bboxes_ignore=gt_bboxes_ignore)
-            losses.update(rpn_losses)
-
-            proposal_cfg = self.train_cfg.get('img_rpn_proposal',
-                                              self.test_cfg.img_rpn)
-            proposal_inputs = rpn_outs + (img_metas, proposal_cfg)
-            proposal_list = self.img_rpn_head.get_bboxes(*proposal_inputs)
-        else:
-            proposal_list = proposals
-
-        # bbox head forward and loss
-        if self.with_img_bbox:
-            # bbox head forward and loss
-            img_roi_losses = self.img_roi_head.forward_train(
-                x, img_metas, proposal_list, gt_bboxes, gt_labels,
-                gt_bboxes_ignore, **kwargs)
-            losses.update(img_roi_losses)
-
-        return losses
-
-    def simple_test_img(self, x, img_metas, proposals=None, rescale=False):
-        """Test without augmentation."""
-        if proposals is None:
-            proposal_list = self.simple_test_rpn(x, img_metas,
-                                                 self.test_cfg.img_rpn)
-        else:
-            proposal_list = proposals
-
-        return self.img_roi_head.simple_test(
-            x, proposal_list, img_metas, rescale=rescale)
-
-    def simple_test_rpn(self, x, img_metas, rpn_test_cfg):
-        """RPN test function."""
-        rpn_outs = self.img_rpn_head(x)
-        proposal_inputs = rpn_outs + (img_metas, rpn_test_cfg)
-        proposal_list = self.img_rpn_head.get_bboxes(*proposal_inputs)
-        return proposal_list
-
     def simple_test_pts(self, x, img_metas, rescale=False):
         """Test function of point cloud branch."""
         outs = self.pts_bbox_head(x)
+
+        if self.save_model:
+            # Save bbox head.
+            print("\n==== ready to save bbox head ====")
+            bbox_head_saver = torch.jit.trace(self.pts_bbox_head, (x, ))
+            bbox_head_saver.save(self.save_model_base_path + "bbox_head.zip")
+            print("==== save bbox head done ====")
+
         bbox_list = self.pts_bbox_head.get_bboxes(
             *outs, img_metas, rescale=rescale)
         bbox_results = [
@@ -410,11 +400,6 @@ class MVXTwoStageDetector(Base3DDetector):
                 pts_feats, img_metas, rescale=rescale)
             for result_dict, pts_bbox in zip(bbox_list, bbox_pts):
                 result_dict['pts_bbox'] = pts_bbox
-        if img_feats and self.with_img_bbox:
-            bbox_img = self.simple_test_img(
-                img_feats, img_metas, rescale=rescale)
-            for result_dict, img_bbox in zip(bbox_list, bbox_img):
-                result_dict['img_bbox'] = img_bbox
         return bbox_list
 
     def aug_test(self, points, img_metas, imgs=None, rescale=False):

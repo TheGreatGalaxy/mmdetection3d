@@ -96,6 +96,7 @@ class Anchor3DRangeGenerator(object):
                 num_base_anchors is the number of anchors for that level.
         """
         assert self.num_levels == len(featmap_sizes)
+        # print("featmap_sizes: ", featmap_sizes)
         multi_level_anchors = []
         for i in range(self.num_levels):
             anchors = self.single_level_grid_anchors(
@@ -184,7 +185,9 @@ class Anchor3DRangeGenerator(object):
         rotations = torch.tensor(rotations, device=device)
 
         # torch.meshgrid default behavior is 'id', np's default is 'xy'
-        rets = torch.meshgrid(x_centers, y_centers, z_centers, rotations, indexing="ij")
+        rets = torch.meshgrid(x_centers, y_centers,
+                              z_centers, rotations, indexing="ij")
+        # print("rets: ", type(rets.shape))
         # torch.meshgrid returns a tuple rather than list
         rets = list(rets)
         tile_shape = [1] * 5
@@ -314,9 +317,8 @@ class AlignedAnchor3DRangeGenerator(Anchor3DRangeGenerator):
         tile_size_shape[3] = 1
         sizes = sizes.repeat(tile_size_shape)
         rets.insert(3, sizes)
-
         ret = torch.cat(rets, dim=-1).permute([2, 1, 0, 3, 4, 5])
-
+        
         if len(self.custom_values) > 0:
             custom_ndim = len(self.custom_values)
             custom = ret.new_zeros([*ret.shape[:-1], custom_ndim])
