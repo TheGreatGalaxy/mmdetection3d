@@ -213,9 +213,6 @@ class MVXTwoStageDetector(Base3DDetector):
         print("after HardVFE voxel_feature: \n", voxel_features.shape)
         # after HardVFE voxel_feature:  torch.Size([3151, 64])
 
-        import pdb
-        pdb.set_trace()
-
         if self.save_model:
             # Save voxel encoder.
             print("==== ready to save voxel encoder ====")
