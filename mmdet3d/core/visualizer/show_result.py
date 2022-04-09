@@ -1,8 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from math import sqrt
 import mmcv
 import numpy as np
 import trimesh
-from os import path as osp
+from os import path as osp, pread
+
 
 from .image_vis import (draw_camera_bbox3d_on_img, draw_depth_bbox3d_on_img,
                         draw_lidar_bbox3d_on_img)
@@ -124,6 +126,91 @@ def show_result(points,
         show_path = osp.join(result_path,
                              f'{filename}_online.png') if snapshot else None
         vis.show(show_path)
+
+    if points is not None:
+        _write_obj(points, osp.join(result_path, f'{filename}_points.obj'))
+
+    if gt_bboxes is not None:
+        # bottom center to gravity center
+        gt_bboxes[..., 2] += gt_bboxes[..., 5] / 2
+        # the positive direction for yaw in meshlab is clockwise
+        gt_bboxes[:, 6] *= -1
+        _write_oriented_bbox(gt_bboxes,
+                             osp.join(result_path, f'{filename}_gt.obj'))
+
+    if pred_bboxes is not None:
+        # bottom center to gravity center
+        pred_bboxes[..., 2] += pred_bboxes[..., 5] / 2
+        # the positive direction for yaw in meshlab is clockwise
+        pred_bboxes[:, 6] *= -1
+        _write_oriented_bbox(pred_bboxes,
+                             osp.join(result_path, f'{filename}_pred.obj'))
+
+
+def show_result_with_labels(points,
+                            gt_bboxes,
+                            pred_bboxes,
+                            out_dir,
+                            filename,
+                            show=False,
+                            snapshot=False,
+                            pred_labels=None,
+                            pred_scores=None):
+    """Convert results into format that is directly readable for meshlab.
+
+    Args:
+        points (np.ndarray): Points.
+        gt_bboxes (np.ndarray): Ground truth boxes.
+        pred_bboxes (np.ndarray): Predicted boxes.
+        out_dir (str): Path of output directory
+        filename (str): Filename of the current frame.
+        show (bool, optional): Visualize the results online. Defaults to False.
+        snapshot (bool, optional): Whether to save the online results.
+            Defaults to False.
+        pred_labels (np.ndarray, optional): Predicted labels of boxes.
+            Defaults to None.
+    """
+    result_path = osp.join(out_dir, filename)
+    mmcv.mkdir_or_exist(result_path)
+
+    if show:
+        from .open3d_vis import O3DVisualizer
+
+        vis = O3DVisualizer(points)
+        if pred_bboxes is not None:
+            if pred_labels is None:
+                vis.add_bboxes(bbox3d=pred_bboxes)
+            else:
+                assert(len(pred_scores) == len(pred_labels))
+                np.random.seed(0)
+                palette = np.random.randint(
+                    0, 255, size=(pred_labels.max() + 1, 3)) / 256
+                labelDict = {}
+                desDict = {}
+                for j in range(len(pred_labels)):
+                    i = int(pred_labels[j])
+                    if labelDict.get(i) is None:
+                        labelDict[i] = []
+                        desDict[i] = []
+                    labelDict[i].append(pred_bboxes[j])
+                    box = pred_bboxes[j]
+                    dis = sqrt(box[0] ** 2 + box[1] ** 2)
+                    des = "cls: " + str(i) + \
+                        " sc: {:.2f}".format(
+                            pred_scores[j]) + " dis: {:.2f}".format(dis)
+                    desDict[i].append(des)
+                for i in labelDict:
+                    vis.add_bboxes(
+                        bbox3d=np.array(labelDict[i]),
+                        descriptions=desDict[i],
+                        bbox_color=palette[i],
+                        points_in_box_color=palette[i])
+
+        if gt_bboxes is not None:
+            vis.add_bboxes(bbox3d=gt_bboxes, bbox_color=(0, 0, 1))
+        show_path = osp.join(result_path,
+                             f'{filename}_online.png') if snapshot else None
+        vis.show()
 
     if points is not None:
         _write_obj(points, osp.join(result_path, f'{filename}_points.obj'))

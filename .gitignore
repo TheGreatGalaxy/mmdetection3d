@@ -130,8 +130,11 @@ data/
 # Waymo evaluation
 mmdet3d/core/evaluation/waymo_utils/compute_detection_metrics_main
 
-
 # models
 /checkpoints/
 /models
 /data/*
+demo/yw_data*/
+demo/temp/*
+*.pcd
+*.bin

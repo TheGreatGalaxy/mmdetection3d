@@ -46,9 +46,8 @@ def ParseTrainLog(logs: list):
 
 if __name__ == "__main__":
     logs = []
-    file_1 = "checkpoints/train_2_nuscenes/20211224_110508.log.json"
+    file_1 = "checkpoints/train_15_nuscenes/20220513_071526.log.json"
     logs.append(file_1)
-    file_2 = "checkpoints/train_6_nuscenes/20220118_172016.log.json"
-    logs.append(file_2)
+    # file_2 = "checkpoints/train_6_nuscenes/20220118_172016.log.json"
+    # logs.append(file_2)
     ParseTrainLog(logs)
-

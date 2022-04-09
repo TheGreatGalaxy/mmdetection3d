@@ -43,7 +43,7 @@ class Base3DDetector(BaseDetector):
         else:
             return self.aug_test(points, img_metas, img, **kwargs)
 
-    @auto_fp16(apply_to=('img', 'points'))
+    # @auto_fp16(apply_to=('img', 'points'))
     def forward(self, return_loss=True, **kwargs):
         """Calls either forward_train or forward_test depending on whether
         return_loss=True.
