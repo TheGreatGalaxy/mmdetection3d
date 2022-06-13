@@ -377,17 +377,26 @@ class HardVFE(nn.Module):
             self.vfe_layers = nn.ModuleList(vfe_layers)
         self.num_vfe = len(vfe_layers)
 
+        self.fusion_layer = None
+        if fusion_layer is not None:
+            self.fusion_layer = builder.build_fusion_layer(fusion_layer)
+
     @force_fp32(out_fp16=True)
     def forward(self,
                 features,
                 num_points,
-                coors):
+                coors,
+                img_feats=None,
+                img_metas=None):
         """Forward functions.
 
         Args:
             features (torch.Tensor): Features of voxels, shape is MxNxC.
             num_points (torch.Tensor): Number of points in each voxel.
             coors (torch.Tensor): Coordinates of voxels, shape is Mx(1+NDim).
+            img_feats (list[torch.Tensor], optional): Image fetures used for
+                multi-modality fusion. Defaults to None.
+            img_metas (dict, optional): [description]. Defaults to None.
 
         Returns:
             tuple: If `return_point_feats` is False, returns voxel features and
@@ -424,7 +433,7 @@ class HardVFE(nn.Module):
             features_ls.append(points_dist)
 
         # Combine together feature decorations
-        # Cat into (voxel, pt_num, feature). Size is (P, N, D).
+        # Cat into (voxel, pt_num, feature).
         voxel_feats = torch.cat(features_ls, dim=-1)
         # The feature decorations were calculated without regard to whether
         # pillar was empty.
@@ -436,7 +445,46 @@ class HardVFE(nn.Module):
         for i, vfe in enumerate(self.vfe_layers):
             voxel_feats = vfe(voxel_feats)
 
+        if (self.fusion_layer is not None and img_feats is not None):
+            voxel_feats = self.fusion_with_mask(features, mask, voxel_feats,
+                                                coors, img_feats, img_metas)
+
         return voxel_feats
+
+    def fusion_with_mask(self, features, mask, voxel_feats, coors, img_feats,
+                         img_metas):
+        """Fuse image and point features with mask.
+
+        Args:
+            features (torch.Tensor): Features of voxel, usually it is the
+                values of points in voxels.
+            mask (torch.Tensor): Mask indicates valid features in each voxel.
+            voxel_feats (torch.Tensor): Features of voxels.
+            coors (torch.Tensor): Coordinates of each single voxel.
+            img_feats (list[torch.Tensor]): Multi-scale feature maps of image.
+            img_metas (list(dict)): Meta information of image and points.
+
+        Returns:
+            torch.Tensor: Fused features of each voxel.
+        """
+        # the features is consist of a batch of points
+        batch_size = coors[-1, 0] + 1
+        points = []
+        for i in range(batch_size):
+            single_mask = (coors[:, 0] == i)
+            points.append(features[single_mask][mask[single_mask]])
+
+        point_feats = voxel_feats[mask]
+        point_feats = self.fusion_layer(img_feats, points, point_feats,
+                                        img_metas)
+
+        voxel_canvas = voxel_feats.new_zeros(
+            size=(voxel_feats.size(0), voxel_feats.size(1),
+                  point_feats.size(-1)))
+        voxel_canvas[mask] = point_feats
+        out = torch.max(voxel_canvas, dim=1)[0]
+
+        return out
 
 
 class WrapModule(nn.Module):

@@ -1,6 +1,6 @@
 IMAGE="mmdetection_v3"
 TAG="latest"
-CONTAINER="gt_mm3d_v3"
+CONTAINER="gt_mm3d_v4"
 
 function create() {
   local img_ver=$IMAGE:$TAG
