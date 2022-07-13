@@ -3,9 +3,15 @@
 point_cloud_range = [-74.88, -74.88, -2, 74.88, 74.88, 4]
 # For nuScenes we usually do 10-class detection
 # class_names = [
+#     0 'car', 1 'truck', 2 'trailer', 3 'bus', 4 'construction_vehicle', 5 'bicycle',
+#     6 'motorcycle', 7 'pedestrian', 8 'traffic_cone', 9 'barrier'
+# ]
+
+# class_names = [
 #     'car', 'truck', 'trailer', 'bus', 'construction_vehicle', 'bicycle',
 #     'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
 # ]
+
 class_names = [
     'car', 'bicycle', 'pedestrian'
 ]

@@ -5,17 +5,17 @@ CODE_PATH="/home/revolution/guangtong/mmdetection3d"
 
 IMAGE="mmdetection_v3"
 TAG="latest"
-CONTAINER="gt_mm3d_v4"
+CONTAINER="gt_mm3d_v5"
 
 function create() {
   local img_ver=$IMAGE:$TAG
   echo "Will create container: $CONTAINER, from image: $img_ver"
   xhost +  && docker run --gpus all -it -v ${CODE_PATH}:/mmdetection3d -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -v /Dataset:/mmdetection3d/data -e DISPLAY=$DISPLAY --name $CONTAINER $img_ver
+  -v /data0:/mmdetection3d/data -e DISPLAY=$DISPLAY --name $CONTAINER $img_ver
 }
 
 function start() {
-  docker start $CONTAINER
+  xhost + && docker start $CONTAINER
 }
 
 function into() {

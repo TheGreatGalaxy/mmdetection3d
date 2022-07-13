@@ -219,6 +219,31 @@ class LoadPointsFromMultiSweeps(object):
                 # print("load multi frame idx: ", idx)
                 points_sweep = self._load_points(sweep['data_path'])
                 points_sweep = np.copy(points_sweep).reshape(-1, self.load_dim)
+
+                # # Select beams like RS16.
+                # sel_beam_id = np.array(
+                #     [1,  5,  7, 11, 13, 17, 19, 23, 24, 25, 26, 29, 30, 31])
+                # left_beam_id = np.array([3, 9, 15, 21, 27, 28])
+                # random_sel = np.random.choice(
+                #     left_beam_id, size=2, replace=False)
+                # mask = np.zeros(points_sweep.shape[0], dtype=np.bool)
+                # target_beam_id = np.concatenate((sel_beam_id, random_sel))
+                # for i, v in enumerate(points_sweep[:, 4]):
+                #     if v in target_beam_id:
+                #         mask[i] = True
+                # sel_points_sweep = points_sweep[mask]
+
+                # if self.remove_close:
+                #     sel_points_sweep = self._remove_close(sel_points_sweep)
+                # sweep_ts = sweep['timestamp'] / 1e6
+                # sel_points_sweep[:, :3] = sel_points_sweep[:, :3] @ sweep[
+                #     'sensor2lidar_rotation'].T
+                # sel_points_sweep[:, :3] += sweep['sensor2lidar_translation']
+                # sel_points_sweep[:, 4] = ts - sweep_ts
+                # sel_points_sweep = points.new_point(sel_points_sweep)
+                # sweep_points_list.append(sel_points_sweep)
+
+                # original code.
                 if self.remove_close:
                     points_sweep = self._remove_close(points_sweep)
                 sweep_ts = sweep['timestamp'] / 1e6
@@ -425,6 +450,19 @@ class LoadPointsFromFile(object):
         pts_filename = results['pts_filename']
         points = self._load_points(pts_filename)
         points = points.reshape(-1, self.load_dim)
+        # Select beams like RS16.
+        # sel_beam_id = np.array(
+        #     [1,  5,  7, 11, 13, 17, 19, 23, 24, 25, 26, 29, 30, 31])
+        # left_beam_id = np.array([3, 9, 15, 21, 27, 28])
+        # random_sel = np.random.choice(left_beam_id, size=2, replace=False)
+        # mask = np.zeros(points.shape[0], dtype=np.bool)
+        # target_beam_id = np.concatenate((sel_beam_id, random_sel))
+        # for i, v in enumerate(points[:, 4]):
+        #     if v in target_beam_id:
+        #         mask[i] = True
+        # sel_pts = points[mask]
+        # points = sel_pts[:, self.use_dim]
+
         points = points[:, self.use_dim]
         attribute_dims = None
 
@@ -550,6 +588,19 @@ class LoadPointsFromFileCustom(object):
         pts_filename = results['pts_filename']
         points = self._load_points(pts_filename)
         points = points.reshape(-1, self.load_dim)
+        # # Select beams like RS16.
+        # sel_beam_id = np.array(
+        #     [1,  5,  7, 11, 13, 17, 19, 23, 24, 25, 26, 29, 30, 31])
+        # left_beam_id = np.array([3, 9, 15, 21, 27, 28])
+        # random_sel = np.random.choice(left_beam_id, size=2, replace=False)
+        # mask = np.zeros(points.shape[0], dtype=np.bool)
+        # target_beam_id = np.concatenate((sel_beam_id, random_sel))
+        # for i, v in enumerate(points[:, 4]):
+        #     if v in target_beam_id:
+        #         mask[i] = True
+        # sel_pts = points[mask]
+        # points = sel_pts[:, self.use_dim]
+
         points = points[:, self.use_dim]
         if self.normalize_intensity is not None:
             if isinstance(self.normalize_intensity, int) and self.normalize_intensity in self.use_dim:

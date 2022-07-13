@@ -50,7 +50,7 @@ checkpoints/hv_second_secfpn_6x8_80e_kitti-3d-car_20200620_230238-393f000c.pth -
 ## Run pointpillars on nuScenes dataset
 Detect multiple bin files under given directory, and show results with score threshold.
 ```shell
-python demo/pcd_demo.py data/nuscenes/organized/sweeps/LIDAR_TOP/ checkpoints/train_2_nuscenes/hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_2_nuscenes/epoch_24.pth --show --score-thr 0.25
+python demo/pcd_demo.py data/nuscenes/sweeps/LIDAR_TOP/ checkpoints/train_24_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_24_nuscenes/epoch_24.pth --show --score-thr 0.25
 ```
 
 ## Train pointpillars on nuScenes dataset
