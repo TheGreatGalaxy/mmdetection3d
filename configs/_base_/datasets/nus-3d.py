@@ -1,23 +1,23 @@
 # If point cloud range is changed, the models should also change their point
 # cloud range accordingly
-point_cloud_range = [-74.88, -74.88, -2, 74.88, 74.88, 4]
+point_cloud_range = [-50, -50, -5, 50, 50, 3]
 # For nuScenes we usually do 10-class detection
 # class_names = [
 #     0 'car', 1 'truck', 2 'trailer', 3 'bus', 4 'construction_vehicle', 5 'bicycle',
 #     6 'motorcycle', 7 'pedestrian', 8 'traffic_cone', 9 'barrier'
 # ]
 
-# class_names = [
-#     'car', 'truck', 'trailer', 'bus', 'construction_vehicle', 'bicycle',
-#     'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
-# ]
-
 class_names = [
-    'car', 'bicycle', 'pedestrian'
+    'car', 'truck', 'trailer', 'bus', 'construction_vehicle', 'bicycle',
+    'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
 ]
 
+# class_names = [
+#     'car', 'bicycle', 'pedestrian'
+# ]
+
 dataset_type = 'NuScenesDataset'
-data_root = 'data/nuscenes/organized/'
+data_root = 'data/nuscenes/'
 # Input modality for nuScenes dataset, this is consistent with the submission
 # format which requires the information in input_modality.
 input_modality = dict(
@@ -45,7 +45,7 @@ train_pipeline = [
         file_client_args=file_client_args),
     dict(
         type='LoadPointsFromMultiSweeps',
-        sweeps_num=10,
+        sweeps_num=5,
         file_client_args=file_client_args),
     dict(type='LoadAnnotations3D', with_bbox_3d=True, with_label_3d=True),
     dict(
@@ -70,7 +70,7 @@ test_pipeline = [
         file_client_args=file_client_args),
     dict(
         type='LoadPointsFromMultiSweeps',
-        sweeps_num=10,
+        sweeps_num=5,
         file_client_args=file_client_args),
     dict(
         type='MultiScaleFlipAug3D',
@@ -104,7 +104,7 @@ eval_pipeline = [
         file_client_args=file_client_args),
     dict(
         type='LoadPointsFromMultiSweeps',
-        sweeps_num=10,
+        sweeps_num=5,
         file_client_args=file_client_args),
     dict(
         type='DefaultFormatBundle3D',
@@ -115,7 +115,7 @@ eval_pipeline = [
 
 data = dict(
     samples_per_gpu=4,
-    workers_per_gpu=4,
+    workers_per_gpu=2,
     train=dict(
         type=dataset_type,
         data_root=data_root,
