@@ -27,12 +27,6 @@ model = dict(
         layer_nums=[3, 5, 5],
         layer_strides=[2, 2, 2],
         out_channels=[64, 128, 256]),
-    # pts_neck=dict(
-    #     type='SECONDFPN',
-    #     norm_cfg=dict(type='BN2d', eps=0.001, momentum=0.01),
-    #     in_channels=[64, 128, 256],
-    #     upsample_strides=[1, 2, 4],
-    #     out_channels=[128, 128, 128]),
     pts_neck=dict(
         type='FPN',
         norm_cfg=dict(type='BN2d', eps=0.001, momentum=0.01),
@@ -43,7 +37,7 @@ model = dict(
         num_outs=3),
     pts_bbox_head=dict(
         type='Anchor3DHead',
-        num_classes=10,
+        num_classes=3,
         in_channels=256,
         feat_channels=256,
         use_direction_classifier=True,
@@ -92,11 +86,11 @@ model = dict(
             score_thr=0.05,
             min_bbox_size=0,
             max_num=500)))
-# class_names = ['car', 'bicycle', 'pedestrian']
-class_names = [
-    'car', 'truck', 'trailer', 'bus', 'construction_vehicle', 'bicycle',
-    'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
-]
+class_names = ['car', 'bicycle', 'pedestrian']
+# class_names = [
+#     'car', 'truck', 'trailer', 'bus', 'construction_vehicle', 'bicycle',
+#     'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
+# ]
 dataset_type = 'NuScenesDataset'
 data_root = 'data/nuscenes/'
 input_modality = dict(

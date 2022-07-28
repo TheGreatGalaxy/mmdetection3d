@@ -338,6 +338,10 @@ def show_det_result_meshlab(data,
     else:
         show_bboxes = deepcopy(pred_bboxes)
 
+    np.set_printoptions(precision=4, suppress=True)
+    torch.set_printoptions(precision=4, sci_mode=False)
+    print("show_bboxes: ", show_bboxes)
+
     # show_result(
     show_result_with_labels(
         points,

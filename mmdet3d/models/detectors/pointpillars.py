@@ -504,6 +504,7 @@ class PointPillars(torch.nn.Module):
         # PointPillars inference core: backbone, neck, head.
         cls_scores, bbox_preds, dir_cls_preds = self.point_pillars_core(
             canvas_features)
+        
         # cls_scores[0].size: [1, 18, 468, 468], bbox_preds[0]: [1, 42, 468, 468], dir_cls_preds[0]: [1, 12, 468, 468]
 
         if self.save_onnx_path:
@@ -534,7 +535,7 @@ class PointPillars(torch.nn.Module):
             onnx_model = onnx.load(pfe_name)
             # Dynamic input.
             model_sim, check = onnxsim.simplify(onnx_model, dynamic_input_shape=True,
-                                                input_shapes={"pillars_input": [12000, 20, 10]})
+                                                input_shapes={"pillars_input": [12000, 64, 10]})
             # Static input.
             ## model_sim, check = onnxsim.simplify(onnx_model)
             assert check, "Simplified pfe onnx model could not be validated"
@@ -543,9 +544,15 @@ class PointPillars(torch.nn.Module):
 
             # Save rpn model by onnx.
             input_names = ["canvas_features"]
-            output_names = ["cls_scores", "bbox_preds", "dir_cls_preds"]
+            assert(len(cls_scores)==len(bbox_preds))
+            assert(len(cls_scores)==len(dir_cls_preds))
+            output_names = ["cls_score", "bbox_pred", "dir_cls_pred"]
+            output_names_for_levels = []
+            for name in output_names:
+              for idx in range(len(cls_scores)):
+                output_names_for_levels.append(name + str(idx))
             torch.onnx.export(self.point_pillars_core, (canvas_features, ), rpn_name, verbose=True,
-                              input_names=input_names, output_names=output_names, opset_version=11)
+                              input_names=input_names, output_names=output_names_for_levels, opset_version=11)
             onnx_model = onnx.load(rpn_name)
             model_sim, check = onnxsim.simplify(onnx_model)
             assert check, "Simplified rpn onnx model could not be validated"
