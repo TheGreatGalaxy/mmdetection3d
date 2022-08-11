@@ -1,6 +1,6 @@
 voxel_size = [0.25, 0.25, 8]
-range_x = 40.0
-range_y = 40.0
+range_x = 50.0
+range_y = 50.0
 point_cloud_range = [-range_x, -range_y, -4.0, range_x, range_y, 4.0]
 sweeps_num = 5
 
@@ -15,12 +15,12 @@ model = dict(
         with_cluster_center=True,
         with_voxel_center=True),
     pts_voxel_encoder=dict(
-        type='SimpleHardVFE',
+        type='SimpleHardVFE2',
         in_channels=10,
-        feat_channels=[64, 64],
+        out_channels=64,
         norm_cfg=dict(type='BN1d', eps=0.001, momentum=0.01)),
     pts_middle_encoder=dict(
-        type='PointPillarsScatter', in_channels=64, output_shape=[320, 320]),
+        type='PointPillarsScatter', in_channels=64, output_shape=[400, 400]),
     pts_backbone=dict(
         type='SECOND',
         in_channels=64,
@@ -198,7 +198,7 @@ eval_pipeline = [
     dict(type='Collect3D', keys=['points'])
 ]
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=8,
     workers_per_gpu=2,
     train=dict(
         type='NuScenesDataset',

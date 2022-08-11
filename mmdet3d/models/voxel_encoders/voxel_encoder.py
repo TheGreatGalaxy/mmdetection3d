@@ -1,7 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 from mmcv.cnn import build_norm_layer
-from mmcv.runner import force_fp32
+from mmcv.runner import force_fp32, auto_fp16
+from torch.nn import functional as F
 from torch import nn
 
 from mmdet3d.ops import DynamicScatter
@@ -521,19 +522,7 @@ class SimpleHardVFE(nn.Module):
     Args:
         in_channels (int): Input channels of VFE. Defaults to 4.
         feat_channels (list(int)): Channels of features in VFE.
-        with_distance (bool): Whether to use the L2 distance of points to the
-            origin point. Default False.
-        with_cluster_center (bool): Whether to use the distance to cluster
-            center of points inside a voxel. Default to False.
-        with_voxel_center (bool): Whether to use the distance to center of
-            voxel for each points inside a voxel. Default to False.
-        voxel_size (tuple[float]): Size of a single voxel. Default to
-            (0.2, 0.2, 4).
-        point_cloud_range (tuple[float]): The range of points or voxels.
-            Default to (0, -40, -3, 70.4, 40, 1).
         norm_cfg (dict): Config dict of normalization layers.
-        mode (str): The mode when pooling features of points inside a voxel.
-            Available options include 'max' and 'avg'. Default to 'max'.
         fusion_layer (dict | None): The config dict of fusion layer used in
             multi-modal detectors. Default to None.
         return_point_feats (bool): Whether to return the features of each
@@ -599,3 +588,60 @@ class SimpleHardVFE(nn.Module):
             voxel_feats = vfe(voxel_feats)
 
         return voxel_feats
+
+
+@VOXEL_ENCODERS.register_module()
+class SimpleHardVFE2(nn.Module):
+    """Voxel Feature Encoder layer.
+
+    The voxel encoder is composed of a series of these layers.
+    This module do not support average pooling and only support to use
+    max pooling to gather features inside a VFE.
+
+    Args:
+        in_channels (int): Number of input channels.
+        out_channels (int): Number of output channels.
+        norm_cfg (dict): Config dict of normalization layers
+        max_out (bool): Whether aggregate the features of points inside
+            each voxel and only return voxel features.
+        cat_max (bool): Whether concatenate the aggregated features
+            and pointwise features.
+    """
+
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 norm_cfg=dict(type='BN1d', eps=1e-3, momentum=0.01)):
+        super(SimpleHardVFE2, self).__init__()
+        self.fp16_enabled = False
+
+        self.norm = build_norm_layer(norm_cfg, out_channels)[1]
+        self.linear = nn.Linear(in_channels, out_channels, bias=False)
+
+    @auto_fp16(apply_to=('inputs'), out_fp32=True)
+    def forward(self, inputs):
+        """Forward function.
+
+        Args:
+            inputs (torch.Tensor): Voxels features of shape (N, M, C).
+                N is the number of voxels, M is the number of points in
+                voxels, C is the number of channels of point features.
+
+        Returns:
+            torch.Tensor: Voxel features. There are three mode under which the
+                features have different meaning.
+                - `max_out=False`: Return point-wise features in
+                    shape (N, M, C).
+                - `max_out=True` and `cat_max=False`: Return aggregated
+                    voxel features in shape (N, C)
+                - `max_out=True` and `cat_max=True`: Return concatenated
+                    point-wise features in shape (N, M, C).
+        """
+        # [K, T, 7] tensordot [7, units] = [K, T, units]
+        x = self.linear(inputs)
+        # Norm should input (N, C) or (N, C, L). Output is same size as input. N is batch size. C is channel.
+        x = self.norm(x.permute(0, 2, 1).contiguous()).permute(0, 2,
+                                                               1).contiguous()
+        pointwise = F.relu(x)
+        # [K, T, units]
+        return torch.max(pointwise, dim=1, keepdim=True)[0].squeeze(1)

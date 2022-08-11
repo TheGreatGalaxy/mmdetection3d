@@ -11,7 +11,7 @@ function create() {
   local img_ver=$IMAGE:$TAG
   echo "Will create container: $CONTAINER, from image: $img_ver"
   xhost +  && docker run --gpus all -it -v ${CODE_PATH}:/mmdetection3d -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -v /data0:/mmdetection3d/data -e DISPLAY=$DISPLAY --name $CONTAINER $img_ver
+  -v /data0:/mmdetection3d/data -e DISPLAY=$DISPLAY --shm-size 6G --name $CONTAINER $img_ver
 }
 
 function start() {
