@@ -302,10 +302,6 @@ def show_det_result_meshlab(data,
                             show=False,
                             snapshot=False):
     """Show 3D detection result by meshlab."""
-    # print("data: \n", data)
-    # print("result: \n", result)
-    # import pdb
-    # pdb.set_trace()
 
     points = data['points'][0][0].cpu().numpy()
     pts_filename = data['img_metas'][0][0]['pts_filename']
@@ -338,9 +334,9 @@ def show_det_result_meshlab(data,
     else:
         show_bboxes = deepcopy(pred_bboxes)
 
-    np.set_printoptions(precision=4, suppress=True)
-    torch.set_printoptions(precision=4, sci_mode=False)
-    print("show_bboxes: ", show_bboxes)
+    # np.set_printoptions(precision=4, suppress=True)
+    # torch.set_printoptions(precision=4, sci_mode=False)
+    # print("show_bboxes: ", show_bboxes)
 
     # show_result(
     show_result_with_labels(

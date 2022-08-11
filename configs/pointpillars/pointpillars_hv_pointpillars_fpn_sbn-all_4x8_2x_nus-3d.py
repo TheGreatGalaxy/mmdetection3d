@@ -1,7 +1,8 @@
 voxel_size = [0.25, 0.25, 8]
-range_x = 50.0
-range_y = 50.0
-point_cloud_range = [-range_x, -range_y, -5.0, range_x, range_y, 3.0]
+range_x = 40.0
+range_y = 40.0
+point_cloud_range = [-range_x, -range_y, -4.0, range_x, range_y, 4.0]
+sweeps_num = 5
 
 model = dict(
     type='PointPillars',
@@ -19,7 +20,7 @@ model = dict(
         feat_channels=[64, 64],
         norm_cfg=dict(type='BN1d', eps=0.001, momentum=0.01)),
     pts_middle_encoder=dict(
-        type='PointPillarsScatter', in_channels=64, output_shape=[400, 400]),
+        type='PointPillarsScatter', in_channels=64, output_shape=[320, 320]),
     pts_backbone=dict(
         type='SECOND',
         in_channels=64,
@@ -37,7 +38,7 @@ model = dict(
         num_outs=3),
     pts_bbox_head=dict(
         type='Anchor3DHead',
-        num_classes=3,
+        num_classes=10,
         in_channels=256,
         feat_channels=256,
         use_direction_classifier=True,
@@ -86,11 +87,11 @@ model = dict(
             score_thr=0.05,
             min_bbox_size=0,
             max_num=500)))
-class_names = ['car', 'bicycle', 'pedestrian']
-# class_names = [
-#     'car', 'truck', 'trailer', 'bus', 'construction_vehicle', 'bicycle',
-#     'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
-# ]
+# class_names = ['car', 'bicycle', 'pedestrian']
+class_names = [
+    'car', 'truck', 'trailer', 'bus', 'construction_vehicle', 'bicycle',
+    'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
+]
 dataset_type = 'NuScenesDataset'
 data_root = 'data/nuscenes/'
 input_modality = dict(
@@ -109,7 +110,7 @@ train_pipeline = [
         file_client_args=dict(backend='disk')),
     dict(
         type='LoadPointsFromMultiSweeps',
-        sweeps_num=5,
+        sweeps_num=sweeps_num,
         # use_dim=[0, 1, 2, 3, 4],
         # normalize_intensity=3,
         file_client_args=dict(backend='disk')),
@@ -151,7 +152,7 @@ test_pipeline = [
         file_client_args=dict(backend='disk')),
     dict(
         type='LoadPointsFromMultiSweeps',
-        sweeps_num=5,
+        sweeps_num=sweeps_num,
         # use_dim=[0, 1, 2, 3, 4],
         # normalize_intensity=3,
         file_client_args=dict(backend='disk')),
@@ -186,7 +187,7 @@ eval_pipeline = [
         file_client_args=dict(backend='disk')),
     dict(
         type='LoadPointsFromMultiSweeps',
-        sweeps_num=5,
+        sweeps_num=sweeps_num,
         # use_dim=[0, 1, 2, 3, 4],
         # normalize_intensity=3,
         file_client_args=dict(backend='disk')),
