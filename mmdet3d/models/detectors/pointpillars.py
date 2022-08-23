@@ -535,7 +535,7 @@ class PointPillars(torch.nn.Module):
             onnx_model = onnx.load(pfe_name)
             # Dynamic input.
             model_sim, check = onnxsim.simplify(onnx_model, dynamic_input_shape=True,
-                                                input_shapes={"pillars_input": [12000, 64, 10]})
+                                                input_shapes={"pillars_input": [12000, 32, 10]})
             # Static input.
             ## model_sim, check = onnxsim.simplify(onnx_model)
             assert check, "Simplified pfe onnx model could not be validated"
