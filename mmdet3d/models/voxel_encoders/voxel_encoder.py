@@ -602,10 +602,6 @@ class SimpleHardVFE2(nn.Module):
         in_channels (int): Number of input channels.
         out_channels (int): Number of output channels.
         norm_cfg (dict): Config dict of normalization layers
-        max_out (bool): Whether aggregate the features of points inside
-            each voxel and only return voxel features.
-        cat_max (bool): Whether concatenate the aggregated features
-            and pointwise features.
     """
 
     def __init__(self,
@@ -628,14 +624,7 @@ class SimpleHardVFE2(nn.Module):
                 voxels, C is the number of channels of point features.
 
         Returns:
-            torch.Tensor: Voxel features. There are three mode under which the
-                features have different meaning.
-                - `max_out=False`: Return point-wise features in
-                    shape (N, M, C).
-                - `max_out=True` and `cat_max=False`: Return aggregated
-                    voxel features in shape (N, C)
-                - `max_out=True` and `cat_max=True`: Return concatenated
-                    point-wise features in shape (N, M, C).
+            torch.Tensor: Voxel features.
         """
         # [K, T, 7] tensordot [7, units] = [K, T, units]
         x = self.linear(inputs)
@@ -648,6 +637,49 @@ class SimpleHardVFE2(nn.Module):
         # [K, T, units]
         res = torch.max(pointwise, dim=1, keepdim=True)[0].squeeze(1)
         return res
+
+
+@VOXEL_ENCODERS.register_module()
+class SimpleHardVFE4(nn.Module):
+    """Voxel Feature Encoder layer.
+
+    The voxel encoder is composed of a series of these layers.
+    This module do not support average pooling and only support to use
+    max pooling to gather features inside a VFE.
+
+    Args:
+        in_channels (int): Number of input channels.
+        out_channels (int): Number of output channels.
+        norm_cfg (dict): Config dict of normalization layers
+    """
+
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 norm_cfg=dict(type='BN1d', eps=1e-3, momentum=0.01)):
+        super(SimpleHardVFE4, self).__init__()
+        self.fp16_enabled = False
+
+        self.norm = build_norm_layer(norm_cfg, out_channels)[1]
+        self.linear = nn.Linear(in_channels, out_channels, bias=False)
+
+    @auto_fp16(apply_to=('inputs'), out_fp32=True)
+    def forward(self, inputs):
+        """Forward function.
+
+        Args:
+            inputs (torch.Tensor): Voxels features of shape (N, M, C).
+                N is the number of voxels, M is the number of points in
+                voxels, C is the number of channels of point features.
+
+        Returns:
+            torch.Tensor: Voxel features.
+        """
+        # [K, T, 7] tensordot [7, units] = [K, T, units]
+        x = self.linear(inputs)
+        # Norm should input (N, C) or (N, C, L). Output is same size as input. N is batch size. C is channel.
+        x = self.norm(x.permute(0, 2, 1)).contiguous()
+        return x
 
 
 @VOXEL_ENCODERS.register_module()
@@ -677,7 +709,8 @@ class SimpleHardVFE3(nn.Module):
 
         self.norm = build_norm_layer(norm_cfg, out_channels)[1]
         self.linear = nn.Linear(in_channels, out_channels, bias=False)
-        self.conv1d = nn.Conv1d(32, 1, 1)
+        self.conv1d = nn.Conv1d(
+            in_channels=32, out_channels=1, kernel_size=5, stride=1, padding=2)
 
     @auto_fp16(apply_to=('inputs'), out_fp32=True)
     def forward(self, inputs):

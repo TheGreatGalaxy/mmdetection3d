@@ -15,12 +15,12 @@ model = dict(
         with_cluster_center=True,
         with_voxel_center=True),
     pts_voxel_encoder=dict(
-        type='SimpleHardVFE2',
+        type='SimpleHardVFE4',
         in_channels=10,
         out_channels=64,
         norm_cfg=dict(type='BN1d', eps=0.001, momentum=0.01)),
     pts_middle_encoder=dict(
-        type='PointPillarsScatter', in_channels=64, output_shape=[400, 400]),
+        type='PointPillarsReluReduceMaxScatter', in_channels=64, output_shape=[400, 400]),
     pts_backbone=dict(
         type='SECOND',
         in_channels=64,
