@@ -33,14 +33,14 @@ model = dict(
         norm_cfg=dict(type='BN2d', eps=0.001, momentum=0.01),
         act_cfg=dict(type='ReLU'),
         in_channels=[64, 128, 256],
-        out_channels=128,
+        out_channels=256,
         start_level=0,
         num_outs=3),
     pts_bbox_head=dict(
         type='Anchor3DHead',
         num_classes=10,
-        in_channels=128,
-        feat_channels=128,
+        in_channels=256,
+        feat_channels=256,
         use_direction_classifier=True,
         anchor_generator=dict(
             type='AlignedAnchor3DRangeGenerator',

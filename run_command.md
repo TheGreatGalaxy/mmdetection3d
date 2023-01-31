@@ -1,8 +1,8 @@
 # Build docker
-> docker build -f docker/Dockerfile -t mmdetection_v3 .
+> docker build -f docker/Dockerfile -t mmdetection_v4 .
 
 Create a container, and into it:
-> bash docker/start_docker.sh
+> bash docker/docker.sh create
 
 Install python dependencies:
 > pip install -r requirements.txt
@@ -11,7 +11,10 @@ Install mmdetection3d:
 > pip install -v -e . 
 
 Color terminator:
-> echo "export PS1='${debian_chroot:+($debian_chroot)}\[\033[01;35;01m\]\u\[\033[00;31;01m\]@\[\033[01;36;01m\]\h\[\033[00;31;01m\]:\[\033[00;00;01m\]\w \[\033[01;32;01m\]\$ \[\033[01;33;01m\]'" >> ~/.bashrc
+> echo "export PS1='${debian_chroot:+($debian_chroot)}\[\033[01;35;01m\]\u\[\033[00;31;01m\]@\[\033[01;36;01m\]\h\[\033[00;31;01m\]:\[\033[00;00;01m\]\w \[\033[01;32;01m\]\$ \[\033[01;33;01m\]'" >> ~/.bashrc && source ~/.bashrc
+
+Commit container changes into image.
+> bash docker/docker.sh commit
 
 Check train log by tensorboard
 > tensorboard --logdir=checkpoints/train_23_nuscenes/tf_logs/.

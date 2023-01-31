@@ -3,15 +3,21 @@ DOCKER_FILE_PATH="docker/Dockerfile"
 # Your code path, will project into docker path: /project.
 CODE_PATH="/home/revolution/guangtong/mmdetection3d"
 
-IMAGE="mmdetection_v3"
+IMAGE="mmdetection_v4"
 TAG="latest"
-CONTAINER="gt_mm3d_v5"
+CONTAINER=${IMAGE}"_container_5"
 
 function create() {
   local img_ver=$IMAGE:$TAG
   echo "Will create container: $CONTAINER, from image: $img_ver"
   xhost +  && docker run --gpus all -it -v ${CODE_PATH}:/mmdetection3d -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v /data0:/mmdetection3d/data -e DISPLAY=$DISPLAY --shm-size 6G --name $CONTAINER $img_ver
+}
+
+function commit() {
+  local img_ver=$IMAGE:$TAG
+  echo "Will commit container: $CONTAINER, into image: $img_ver"
+  docker commit -a "nobody" -p -m "commit environment changes into image" $CONTAINER $img_ver
 }
 
 function start() {
@@ -47,6 +53,8 @@ function main() {
     start
   elif [[ $1 == "into" || $1 == "i" ]]; then
     into
+  elif [[ $1 == "commit" ]]; then
+    commit
   else 
     help
   fi

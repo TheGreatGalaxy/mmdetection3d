@@ -4,12 +4,14 @@ from open3d.visualization import O3DVisualizer
 import open3d as o3d
 import numpy as np
 from open3d import*
+import pdb
 
-# source_data = np.load('curtain_0088.npy')[:,0:3]  #10000x3
-# source_data = np.random.randint(-100, high=100, size=(1000, 3))
-# point_cloud = open3d.geometry.PointCloud()
-# point_cloud.points = open3d.utility.Vector3dVector(source_data)
-# open3d.visualization.draw_geometries([point_cloud])
+def Simplest():
+    # source_data = np.load('curtain_0088.npy')[:,0:3]  #10000x3
+    source_data = np.random.randint(-100, high=100, size=(1000, 3))
+    point_cloud = o3d.geometry.PointCloud()
+    point_cloud.points = o3d.utility.Vector3dVector(source_data)
+    o3d.visualization.draw_geometries([point_cloud])
 
 
 def make_point_cloud(npts, center, radius):
@@ -65,6 +67,7 @@ def low_level():
 
     w = app.create_window("Open3D - 3D Text", 1024, 768)
     widget3d = gui.SceneWidget()
+
     widget3d.scene = rendering.Open3DScene(w.renderer)
     mat = rendering.MaterialRecord()
     mat.shader = "defaultUnlit"
@@ -83,5 +86,10 @@ def low_level():
 
 
 if __name__ == "__main__":
-    high_level()
+    # pdb.set_trace()
+    # print("This is high level")
+    # high_level()
+    # print("This is low level")
     # low_level()
+    print("This is simplest")
+    Simplest()

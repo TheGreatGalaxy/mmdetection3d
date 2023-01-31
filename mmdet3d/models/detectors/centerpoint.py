@@ -37,13 +37,48 @@ class CenterPoint(MVXTwoStageDetector):
         """Extract features of points."""
         if not self.with_pts_bbox:
             return None
+        save_onnx = True
+        save_onnx_path = "/mmdetection3d/checkpoints/centerpoint/"
+        # if save_onnx:
+        #     save_path = save_onnx_path + "voxelize.onnx"
+        #     torch.onnx.export(self.voxelize, (pts,), save_path, verbose=True, opset_version=11)
         voxels, num_points, coors = self.voxelize(pts)
 
+        if save_onnx:
+            save_path = save_onnx_path + "pts_voxel_encoder.onnx"
+            torch.onnx.export(self.pts_voxel_encoder, (voxels, num_points, coors),\
+                save_path, verbose=False, input_names=["voxels", "num_points", "coors"],\
+                    output_names=["voxel_features"], opset_version=11)
+            print("save_path: ", save_path)
         voxel_features = self.pts_voxel_encoder(voxels, num_points, coors)
+
+
         batch_size = coors[-1, 0] + 1
+        
+        if save_onnx:
+            save_path = save_onnx_path + "pts_middle_encoder.onnx"
+            torch.onnx.export(self.pts_middle_encoder, (voxel_features, coors, batch_size),\
+                save_path, verbose=False, input_names=["voxel_features", "coors", "batch_size"],\
+                    output_names=["pts_middle_encoder_output"], opset_version=11)
+            print("save_path: ", save_path)
         x = self.pts_middle_encoder(voxel_features, coors, batch_size)
+        
+        if save_onnx:
+            save_path = save_onnx_path + "pts_backbone.onnx"
+            torch.onnx.export(self.pts_backbone, (x,), save_path, verbose=False,\
+                input_names=["pts_backbone_input"],\
+                output_names=["pts_backbone_output"], opset_version=11)
+            print("save_path: ", save_path)
         x = self.pts_backbone(x)
+
+
         if self.with_pts_neck:
+            if save_onnx:
+                save_path = save_onnx_path + "pts_neck.onnx"
+                torch.onnx.export(self.pts_neck, (x,), save_path, verbose=False,\
+                input_names=["pts_neck_input"],\
+                output_names=["pts_neck_output"],  opset_version=11)
+                print("save_path: ", save_path)
             x = self.pts_neck(x)
         return x
 
@@ -75,6 +110,14 @@ class CenterPoint(MVXTwoStageDetector):
 
     def simple_test_pts(self, x, img_metas, rescale=False):
         """Test function of point cloud branch."""
+        save_onnx = True
+        save_onnx_path = "/mmdetection3d/checkpoints/centerpoint/"
+        if save_onnx:
+            save_path = save_onnx_path + "pts_bbox_head.onnx"
+            torch.onnx.export(self.pts_bbox_head, (x,),\
+                save_path, verbose=True, input_names=["pts_bbox_head_input"],\
+                opset_version=11)
+            print("save_path: ", save_path)
         outs = self.pts_bbox_head(x)
         bbox_list = self.pts_bbox_head.get_bboxes(
             outs, img_metas, rescale=rescale)
