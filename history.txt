@@ -1,0 +1,79 @@
+    1  htop
+    2  top
+    3  kill -9 18955
+    4  python demo/pcd_demo.py data/nuscenes/organized/sweeps/LIDAR_TOP/ checkpoints/train_11_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_11_nuscenes/modi_epoch_24.pth --show --score-thr 0.25
+    5  pip list
+    6  pip install onnx
+    7  pip install onnx-sim
+    8  pip install onnx-simplifier
+    9  reset
+   10  python demo/pcd_demo.py data/nuscenes/organized/sweeps/LIDAR_TOP/ checkpoints/train_11_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_11_nuscenes/modi_epoch_24.pth --show --score-thr 0.25
+   11  reset
+   12  python demo/pcd_demo.py data/nuscenes/organized/sweeps/LIDAR_TOP/ checkpoints/train_11_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_11_nuscenes/modi_epoch_24.pth --show --score-thr 0.25
+   13  reset
+   14  list
+   15  history
+   16  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ checkpoints/train_21_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_21_nuscenes/epoch_24.pth --show --score-thr 0.05
+   17  python test_open3d.py 
+   18  reset
+   19  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ checkpoints/train_21_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_21_nuscenes/epoch_24.pth --show --score-thr 0.05
+   20  reset
+   21  history
+   22  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ checkpoints/train_21_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_21_nuscenes/epoch_24.pth --show --score-thr 0.05
+   23  python test_open3d.py 
+   24  python demo/pcd_demo.py data/nuscenes/organized/sweeps/LIDAR_TOP/ checkpoints/train_24_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_24_nuscenes/epoch_24.pth --show --score-thr 0.25
+   25  python demo/pcd_demo.py data/nuscenes/sweeps/LIDAR_TOP/ checkpoints/train_24_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_24_nuscenes/epoch_24.pth --show --score-thr 0.25
+   26  history
+   27  python tools/train.py configs/pointpillars/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py --work-dir checkpoints/train_25_nuscenes
+   28  history
+   29  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ checkpoints/train_25_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_25_nuscenes/epoch_24.pth --show --score-thr 0.05
+   30  CUDA_LAUNCH_BLOCKING=1
+   31  echo $CUDA_LAUNCH_BLOCKING
+   32  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ checkpoints/train_25_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_25_nuscenes/epoch_24.pth --show --score-thr 0.05
+   33  CUDA_LAUNCH_BLOCKING=1 python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ checkpoints/train_25_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_25_nuscenes/epoch_24.pth --show --score-thr 0.05
+   34  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ checkpoints/train_25_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_25_nuscenes/epoch_24.pth --show --score-thr 0.05
+   35  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ checkpoints/train_24_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_24_nuscenes/epoch_24.pth --show --score-thr 0.05
+   36  history
+   37  python demo/pcd_demo.py data/nuscenes/sweeps/LIDAR_TOP/  checkpoints/train_25_nuscenes/point_pillars_hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py checkpoints/train_25_nuscenes/epoch_24.pth --show --score-thr 0.25
+   38  history
+   39  python demo/pcd_demo.py data/nuscenes/sweeps/LIDAR_TOP/ configs/pointpillars/hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d_20200620_230725-0817d270.pth
+   40  history
+   41  python demo/pcd_demo.py data/nuscenes/sweeps/LIDAR_TOP/ configs/pointpillars/hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d_20200620_230725-0817d270.pth --show --score-thr 0.25
+   42  python demo/pcd_demo.py data/nuscenes/sweeps/LIDAR_TOP/ configs/pointpillars/hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py  configs/pointpillars/hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d_20200620_230725-0817d270.pth --show --score-thr 0.25
+   43  history
+   44  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ configs/pointpillars/hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py  configs/pointpillars/hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d_20200620_230725-0817d270.pth --show --score-thr 0.25
+   45  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus.py configs/center
+   46  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus.py configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus_20201004_170716-a134a233.pth --show --score-thr 0.25
+   47  vim /opt/conda/lib/python3.7/site-packages/mmdet/models/necks/fpn.py
+   48  cat /opt/conda/lib/python3.7/site-packages/mmdet/models/necks/fpn.py
+   49  nvidia-smi
+   50  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ checkpoints/pp_fpn_4/pointpillars_hv_pointpillars_fpn_sbn-all_4x8_2x_nus-3d.py checkpoints/pp_fpn_4/epoch_24.pth --show --score-thr 0.25
+   51  history
+   52  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ checkpoints/pp_fpn_3/pointpillars_hv_pointpillars_fpn_sbn-all_4x8_2x_nus-3d.py checkpoints/pp_fpn_3/epoch_24.pth --show --score-thr 0.25
+   53  history
+   54  python tools/train.py configs/pointpillars/pointpillars_hv_pointpillars_fpn_sbn-all_4x8_2x_nus-3d.py --work-dir checkpoints/pp_fpn_5
+   55  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ checkpoints/pp_fpn_5/pointpillars_hv_pointpillars_fpn_sbn-all_4x8_2x_nus-3d.py checkpoints/pp_fpn_5/epoch_24.pth --show --score-thr 0.25
+   56  history
+   57  python demo/pcd_demo.py data/nuscenes/sweeps/LIDAR_TOP/ checkpoints/pp_fpn_5/pointpillars_hv_pointpillars_fpn_sbn-all_4x8_2x_nus-3d.py checkpoints/pp_fpn_5/epoch_24.pth --show --score-thr 0.25
+   58  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ checkpoints/pp_fpn_3/pointpillars_hv_pointpillars_fpn_sbn-all_4x8_2x_nus-3d.py checkpoints/pp_fpn_3/epoch_24.pth --show --score-thr 0.25
+   59  history
+   60  python demo/pcd_demo.py data/nuscenes/sweeps/LIDAR_TOP/ checkpoints/pp_fpn_5/pointpillars_hv_pointpillars_fpn_sbn-all_4x8_2x_nus-3d.py checkpoints/pp_fpn_5/epoch_24.pth --show --score-thr 0.25
+   61  nvidia-smi
+   62  python demo/pcd_demo.py data/nuscenes/sweeps/LIDAR_TOP/ checkpoints/pp_fpn_5/pointpillars_hv_pointpillars_fpn_sbn-all_4x8_2x_nus-3d.py checkpoints/pp_fpn_5/epoch_24.pth --show --score-thr 0.25
+   63  history
+   64  python tools/train.py configs/pointpillars/pointpillars_hv_pointpillars_fpn_sbn-all_4x8_2x_nus-3d.py --work-dir checkpoints/pp_fpn_7
+   65  history
+   66  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus.py configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus_20201004_170716-a134a233.pth --show --score-thr 0.25
+   67  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus.py configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus_20210816_064624-0f3299c0.pth --show --score-thr 0.25
+   68  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus.py configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus_20210816_064624-0f3299c0.pth --score-thr 0.25
+   69  nvidia-smi
+   70  python test_open3d.py 
+   71  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus.py configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus_20210816_064624-0f3299c0.pth --score-thr 0.25
+   72  reset
+   73  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus.py configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus_20210816_064624-0f3299c0.pth --score-thr 0.25
+   74  ll
+   75  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus.py configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus_20210816_064624-0f3299c0.pth --score-thr 0.25
+   76  python test_open3d.py 
+   77  python demo/pcd_demo.py demo/yw_data3/multi_sweeps/ configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus.py configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus_20210816_064624-0f3299c0.pth --score-thr 0.25 --show
+   78  history
+   79  history > history.txt
