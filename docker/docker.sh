@@ -3,9 +3,10 @@ DOCKER_FILE_PATH="docker/Dockerfile"
 # Your code path, will project into docker path: /project.
 CODE_PATH="/home/revolution/guangtong/mmdetection3d"
 
-IMAGE="mmdetection_v4"
+IMAGE="mmdetection_v3"
 TAG="latest"
 CONTAINER=${IMAGE}"_container_5"
+# CONTAINER="gt_mm3d_v5"
 
 function create() {
   local img_ver=$IMAGE:$TAG

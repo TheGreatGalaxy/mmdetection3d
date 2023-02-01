@@ -87,9 +87,9 @@ def low_level():
 
 if __name__ == "__main__":
     # pdb.set_trace()
-    # print("This is high level")
-    # high_level()
+    print("This is high level")
+    high_level()
     # print("This is low level")
     # low_level()
-    print("This is simplest")
-    Simplest()
+    # print("This is simplest")
+    # Simplest()
